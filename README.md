@@ -1,6 +1,6 @@
 # Caso_LikeU — Caso Técnico Analista de Datos
 
-Solución reproducible para procesar el extracto `prueba.txt`, estructurar JSON embebido, clasificar mensajes entrantes con NLP ligero, cargar PostgreSQL, calcular indicadores SQL y presentar un dashboard web construido **sin framework de visualización**: Python estándar + HTML/CSS.
+Solución reproducible para procesar el extracto `prueba.txt`, estructurar JSON embebido, clasificar mensajes entrantes con NLP ligero, cargar PostgreSQL, calcular indicadores SQL y presentar un dashboard web construido **sin framework de visualización**: Python estándar + HTML/CSS + JavaScript nativo.
 
 ## Arquitectura
 
@@ -83,6 +83,34 @@ Resultado esperado:
 3687
 ```
 
+
+## Trazabilidad ETL visible en el dashboard
+
+La sección **00 · Trazabilidad ETL** permite demostrar el proceso completo sin salir del navegador:
+
+- Vista previa del archivo fuente `data/raw/prueba.txt`.
+- Metadatos del archivo: nombre, tamaño, fecha de modificación y filas físicas.
+- Botón **Ejecutar ETL en vivo**, que ejecuta el mismo `python -m src.main` usado desde CMD.
+- Log real de la ejecución ETL.
+- Vista previa de `data/processed/messages_clean.csv` después del procesamiento.
+- Descarga del TXT original y del CSV limpio.
+- Código Python real de lectura, limpieza, parsing JSON, NLP y carga a PostgreSQL.
+- Flujo visual TXT → limpieza → JSON → NLP → CSV → PostgreSQL → dashboard.
+
+El servicio `dashboard` monta `./data:/app/data`, por lo que el archivo limpio generado desde el navegador o desde el contenedor ETL queda persistido también en la carpeta local `data\processed`.
+
+Para verificarlo desde Windows CMD:
+
+```cmd
+dir data\processed
+```
+
+Debe aparecer:
+
+```text
+messages_clean.csv
+```
+
 ## Dashboard
 
 Abrir:
@@ -91,7 +119,7 @@ Abrir:
 http://localhost:8000
 ```
 
-El tablero presenta una interfaz ejecutiva organizada por requisitos y **cada visualización incluye un bloque desplegable con la consulta SQL real que la alimenta y los parámetros activos**. Esto permite demostrar trazabilidad entre el gráfico y el cálculo ejecutado en PostgreSQL.
+El tablero presenta una interfaz ejecutiva organizada por requisitos y **cada visualización incluye un bloque desplegable con la consulta SQL real que la alimenta y los parámetros activos**. Además, cada gráfica dispone de un botón **Ejecutar consulta**: el navegador llama al endpoint `/api/query`, Python ejecuta nuevamente la consulta en PostgreSQL y la gráfica se actualiza en la misma pantalla con animación y tiempo de ejecución. Esto permite demostrar en vivo la trazabilidad entre SQL, dato y visualización.
 
 El tablero incluye:
 
@@ -107,8 +135,12 @@ El tablero incluye:
 - Clasificación NLP de incoming.
 - Hallazgo ejecutivo generado con las métricas filtradas.
 - Consulta SQL de apoyo visible para KPIs, SLA, funnel, curva horaria, errores, plantillas y categorías.
+- Ejecución interactiva de cada consulta sin recargar la página.
+- Actualización animada de barras y KPIs con JavaScript nativo.
+- Indicador de tiempo de ejecución de cada consulta.
+- Modo presentación que recorre y ejecuta las visualizaciones principales.
 
-El servidor web usa `http.server.ThreadingHTTPServer` de la librería estándar de Python. No utiliza Django, Flask, Streamlit, Metabase, Bootstrap ni frameworks JavaScript.
+El servidor web usa `http.server.ThreadingHTTPServer` de la librería estándar de Python. La interacción del navegador usa JavaScript nativo (`fetch`, DOM y CSS transitions). No utiliza Django, Flask, Streamlit, Metabase, Bootstrap, React, Vue ni frameworks JavaScript.
 
 ## Trazabilidad de requisitos
 
@@ -161,7 +193,8 @@ Caso_LikeU/
 │   ├── queries.py
 │   ├── render.py
 │   ├── templates/dashboard.html
-│   └── static/dashboard.css
+│   ├── static/dashboard.css
+│   └── static/dashboard.js
 ├── data/
 │   ├── raw/prueba.txt
 │   └── processed/

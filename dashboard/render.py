@@ -106,6 +106,7 @@ def option_selected(current: str, value: str) -> str:
 
 
 def sql_support_block(
+    key: str,
     title: str,
     description: str,
     support: dict[str, Any] | None,
@@ -118,7 +119,7 @@ def sql_support_block(
     params_text = escape(json.dumps(params, ensure_ascii=False, default=str))
 
     return f"""
-    <details class="query-support">
+    <details class="query-support" data-query-support="{escape(key)}">
         <summary>
             <span class="query-summary-left">
                 <span class="query-icon">&lt;/&gt;</span>
@@ -132,9 +133,9 @@ def sql_support_block(
         <div class="query-body">
             <div class="query-meta">
                 <span><strong>Parámetros activos</strong></span>
-                <code>{params_text}</code>
+                <code data-query-params>{params_text}</code>
             </div>
-            <pre><code>{sql}</code></pre>
+            <pre><code data-query-sql>{sql}</code></pre>
         </div>
     </details>
     """
@@ -193,39 +194,46 @@ def render_dashboard(
         "{{TOP_TEMPLATE}}": escape(str(top_template.get("label") or "Sin datos")),
         "{{TOP_TEMPLATE_PCT}}": format_number(top_template.get("percentage")),
         "{{QUERY_KPIS}}": sql_support_block(
+            "kpis",
             "Consulta de apoyo · KPIs de entrega",
             "Volumen y tasas de estados sobre mensajes outgoing.",
             query_support.get("kpis"),
         ),
         "{{QUERY_SLA}}": sql_support_block(
+            "sla",
             "Consulta de apoyo · SLA operativo",
             "Métricas calculadas desde la vista construida con Window Functions.",
             query_support.get("sla"),
             tag="SQL · SLA",
         ),
         "{{QUERY_FUNNEL}}": sql_support_block(
+            "funnel",
             "Consulta de apoyo · Funnel de entrega",
             "Agrupa outgoing por estado y calcula su participación porcentual.",
             query_support.get("funnel"),
             tag="SQL · CTE",
         ),
         "{{QUERY_HOURLY}}": sql_support_block(
+            "hourly",
             "Consulta de apoyo · Curva horaria",
             "Cuenta mensajes incoming por hora y completa las 24 franjas.",
             query_support.get("hourly"),
             tag="SQL · CTE",
         ),
         "{{QUERY_ERRORS}}": sql_support_block(
+            "errors",
             "Consulta de apoyo · Errores de entrega",
             "Agrupa mensajes failed por external_error.",
             query_support.get("errors"),
         ),
         "{{QUERY_TEMPLATES}}": sql_support_block(
+            "templates",
             "Consulta de apoyo · Fallos por plantilla",
             "Agrupa mensajes failed por template_name extraído del JSON.",
             query_support.get("templates"),
         ),
         "{{QUERY_CATEGORIES}}": sql_support_block(
+            "categories",
             "Consulta de apoyo · Clasificación NLP",
             "Agrupa incoming por la categoría generada por el clasificador de palabras clave.",
             query_support.get("categories"),

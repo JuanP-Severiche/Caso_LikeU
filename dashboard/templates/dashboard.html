@@ -11,6 +11,7 @@
 <header class="app-header">
     <div class="header-inner">
         <div class="identity">
+            <div class="logo-mark">LU</div>
             <div>
                 <span class="brand">LIKEU ANALYTICS</span>
                 <h1>Campaña WhatsApp</h1>
@@ -41,7 +42,96 @@
         </div>
     </section>
 
-    <form class="filter-panel" method="get" action="/">
+    <section class="section-block etl-section" id="etl-trace-section">
+        <div class="section-heading">
+            <div>
+                <span class="section-kicker">00 · Trazabilidad ETL</span>
+                <h2>Del archivo crudo al dato analítico</h2>
+            </div>
+            <span class="requirement-badge required">Python · Pandas · PostgreSQL</span>
+        </div>
+
+        <div class="etl-actions">
+            <div>
+                <strong>Evidencia reproducible del procesamiento</strong>
+                <p>Visualiza el archivo de entrada, el CSV limpio, el código Python ejecutado y la carga final en PostgreSQL.</p>
+            </div>
+            <div class="etl-action-buttons">
+                <button id="run-etl-live" type="button" class="primary-button">▶ Ejecutar ETL en vivo</button>
+                <button id="refresh-etl-trace" type="button" class="secondary-button">↻ Actualizar evidencia</button>
+            </div>
+        </div>
+
+        <div id="etl-run-state" class="live-banner" data-state="idle" aria-live="polite">
+            ETL listo. La ejecución usa el mismo comando <code>python -m src.main</code> del contenedor.
+        </div>
+
+        <div id="etl-pipeline" class="etl-pipeline" aria-label="Flujo ETL"></div>
+
+        <div class="dashboard-grid two-col etl-files-grid">
+            <article class="analytics-card file-card">
+                <header class="card-header">
+                    <div>
+                        <span class="card-tag">Entrada</span>
+                        <h3>Archivo fuente · prueba.txt</h3>
+                    </div>
+                    <span class="metric-chip">RAW</span>
+                </header>
+                <p class="card-description">Extracto transaccional original recibido para el caso técnico, antes de cualquier transformación.</p>
+                <div class="file-meta" id="raw-file-meta">Cargando metadatos…</div>
+                <div class="table-scroll etl-preview-wrap">
+                    <table class="etl-preview-table" id="raw-preview-table"><tbody><tr><td>Cargando vista previa…</td></tr></tbody></table>
+                </div>
+                <div class="file-actions">
+                    <a class="secondary-link file-link" href="/files/raw/prueba.txt">Descargar archivo original</a>
+                </div>
+            </article>
+
+            <article class="analytics-card file-card processed-card">
+                <header class="card-header">
+                    <div>
+                        <span class="card-tag">Salida</span>
+                        <h3>Archivo limpio · messages_clean.csv</h3>
+                    </div>
+                    <span class="metric-chip">PROCESSED</span>
+                </header>
+                <p class="card-description">Resultado materializado por el ETL después de limpieza, parsing JSON y clasificación NLP ligera.</p>
+                <div class="file-meta" id="processed-file-meta">Cargando metadatos…</div>
+                <div class="table-scroll etl-preview-wrap">
+                    <table class="etl-preview-table" id="processed-preview-table"><tbody><tr><td>Cargando vista previa…</td></tr></tbody></table>
+                </div>
+                <div class="file-actions">
+                    <a class="secondary-link file-link" href="/files/processed/messages_clean.csv">Descargar CSV limpio</a>
+                </div>
+            </article>
+        </div>
+
+        <article class="analytics-card full-width etl-code-card">
+            <header class="card-header">
+                <div>
+                    <span class="card-tag">Código ejecutado</span>
+                    <h3>Transformaciones que producen el archivo limpio</h3>
+                </div>
+                <span class="metric-chip">Trazabilidad Python</span>
+            </header>
+            <p class="card-description">
+                Los bloques siguientes se leen directamente de los módulos reales del proyecto; no son pseudocódigo.
+            </p>
+            <div id="etl-code-support" class="etl-code-support">
+                <p class="empty">Cargando código de apoyo…</p>
+            </div>
+        </article>
+
+        <details class="etl-terminal" id="etl-terminal-panel">
+            <summary>
+                <span><strong>Salida de ejecución del ETL</strong><small>Logs generados por <code>python -m src.main</code></small></span>
+                <span class="query-tag">LOG</span>
+            </summary>
+            <pre id="etl-terminal-log"><code>Aún no se ha ejecutado el ETL desde el dashboard.</code></pre>
+        </details>
+    </section>
+
+    <form id="dashboard-filters" class="filter-panel" method="get" action="/">
         <div class="filter-title">
             <span class="section-kicker">Filtros SQL</span>
             <strong>Segmentación del tablero</strong>
@@ -64,9 +154,14 @@
                 <option value="delivered" {{SELECT_DELIVERED}}>Delivered</option>
             </select>
         </div>
-        <button class="primary-button" type="submit">Aplicar filtros</button>
-        <a class="secondary-link" href="/">Restablecer</a>
+        <button id="run-all" class="primary-button" type="submit">Ejecutar análisis</button>
+        <button id="reset-live" class="secondary-button" type="button">Restablecer</button>
+        <button id="presentation-mode" class="presentation-button" type="button">Modo presentación</button>
     </form>
+
+    <div id="live-banner" class="live-banner" data-state="idle" aria-live="polite">
+        Listo para ejecutar consultas directamente contra PostgreSQL.
+    </div>
 
     <section class="section-block">
         <div class="section-heading">
@@ -80,44 +175,49 @@
         <div class="kpi-grid">
             <article class="kpi-card">
                 <span class="kpi-label">Mensajes salientes</span>
-                <strong>{{OUTGOING}}</strong>
+                <strong id="kpi-outgoing">{{OUTGOING}}</strong>
                 <small>Volumen outgoing filtrado</small>
             </article>
             <article class="kpi-card danger">
                 <span class="kpi-label">Tasa de fallos</span>
-                <strong>{{FAILED_PCT}}%</strong>
-                <small>{{FAILED_MESSAGES}} mensajes failed</small>
+                <strong id="kpi-failed-pct">{{FAILED_PCT}}%</strong>
+                <small id="kpi-failed-messages">{{FAILED_MESSAGES}} mensajes failed</small>
             </article>
             <article class="kpi-card">
                 <span class="kpi-label">Tasa de lectura</span>
-                <strong>{{READ_PCT}}%</strong>
+                <strong id="kpi-read-pct">{{READ_PCT}}%</strong>
                 <small>Mensajes read</small>
             </article>
             <article class="kpi-card">
                 <span class="kpi-label">Tasa delivered</span>
-                <strong>{{DELIVERED_PCT}}%</strong>
+                <strong id="kpi-delivered-pct">{{DELIVERED_PCT}}%</strong>
                 <small>Entrega sin lectura</small>
             </article>
             <article class="kpi-card">
                 <span class="kpi-label">SLA promedio</span>
-                <strong>{{AVG_SLA}} min</strong>
+                <strong id="kpi-avg-sla">{{AVG_SLA}} min</strong>
                 <small>Sensible a valores extremos</small>
             </article>
             <article class="kpi-card success">
                 <span class="kpi-label">SLA mediana</span>
-                <strong>{{MEDIAN_SLA}} min</strong>
+                <strong id="kpi-median-sla">{{MEDIAN_SLA}} min</strong>
                 <small>Valor central de respuesta</small>
             </article>
             <article class="kpi-card">
                 <span class="kpi-label">SLA P90</span>
-                <strong>{{P90_SLA}} min</strong>
+                <strong id="kpi-p90-sla">{{P90_SLA}} min</strong>
                 <small>90% responde antes de este umbral</small>
             </article>
             <article class="kpi-card">
                 <span class="kpi-label">Cobertura SLA</span>
-                <strong>{{COVERAGE}}%</strong>
-                <small>{{UNANSWERED}} incoming sin acción posterior</small>
+                <strong id="kpi-coverage">{{COVERAGE}}%</strong>
+                <small id="kpi-unanswered">{{UNANSWERED}} incoming sin acción posterior</small>
             </article>
+        </div>
+
+        <div class="live-toolbar compact-toolbar">
+            <button type="button" class="run-query-button" data-run="kpis">▶ Ejecutar KPIs</button>
+            <span class="query-state" data-query-state="kpis" data-state="idle">Listo</span>
         </div>
 
         <div class="query-pair">
@@ -136,7 +236,7 @@
         </div>
 
         <div class="dashboard-grid two-col">
-            <article class="analytics-card">
+            <article class="analytics-card" data-card="funnel">
                 <header class="card-header">
                     <div>
                         <span class="card-tag">Funnel de entrega</span>
@@ -147,11 +247,15 @@
                 <p class="card-description">
                     Participación de cada estado sobre los mensajes salientes dentro del periodo filtrado.
                 </p>
-                <div class="chart-space compact">{{FUNNEL}}</div>
+                <div id="chart-funnel" class="chart-space compact">{{FUNNEL}}</div>
+                <div class="live-toolbar">
+                    <button type="button" class="run-query-button" data-run="funnel">▶ Ejecutar consulta</button>
+                    <span class="query-state" data-query-state="funnel" data-state="idle">Listo</span>
+                </div>
                 {{QUERY_FUNNEL}}
             </article>
 
-            <article class="analytics-card">
+            <article class="analytics-card" data-card="sla">
                 <header class="card-header">
                     <div>
                         <span class="card-tag">SLA operativo</span>
@@ -163,16 +267,20 @@
                     La diferencia entre promedio y mediana revela esperas largas que distorsionan el promedio.
                 </p>
                 <div class="sla-grid">
-                    <div><span>Promedio</span><strong>{{AVG_SLA}} min</strong></div>
-                    <div><span>Mediana</span><strong>{{MEDIAN_SLA}} min</strong></div>
-                    <div><span>P90</span><strong>{{P90_SLA}} min</strong></div>
-                    <div><span>Cobertura</span><strong>{{COVERAGE}}%</strong></div>
+                    <div><span>Promedio</span><strong id="sla-avg">{{AVG_SLA}} min</strong></div>
+                    <div><span>Mediana</span><strong id="sla-median">{{MEDIAN_SLA}} min</strong></div>
+                    <div><span>P90</span><strong id="sla-p90">{{P90_SLA}} min</strong></div>
+                    <div><span>Cobertura</span><strong id="sla-coverage">{{COVERAGE}}%</strong></div>
+                </div>
+                <div class="live-toolbar">
+                    <button type="button" class="run-query-button" data-run="sla">▶ Ejecutar consulta</button>
+                    <span class="query-state" data-query-state="sla" data-state="idle">Listo</span>
                 </div>
                 {{QUERY_SLA}}
             </article>
         </div>
 
-        <article class="analytics-card full-width">
+        <article class="analytics-card full-width" data-card="hourly">
             <header class="card-header">
                 <div>
                     <span class="card-tag">Curva de calor horaria</span>
@@ -183,7 +291,11 @@
             <p class="card-description">
                 Distribución de demanda para identificar franjas donde conviene reforzar la capacidad operativa.
             </p>
-            <div class="hour-chart">{{HOURLY}}</div>
+            <div id="chart-hourly" class="hour-chart">{{HOURLY}}</div>
+            <div class="live-toolbar">
+                <button type="button" class="run-query-button" data-run="hourly">▶ Ejecutar consulta</button>
+                <span class="query-state" data-query-state="hourly" data-state="idle">Listo</span>
+            </div>
             {{QUERY_HOURLY}}
         </article>
     </section>
@@ -198,7 +310,7 @@
         </div>
 
         <div class="dashboard-grid two-col">
-            <article class="analytics-card">
+            <article class="analytics-card" data-card="errors">
                 <header class="card-header">
                     <div>
                         <span class="card-tag">Calidad técnica</span>
@@ -209,11 +321,15 @@
                 <p class="card-description">
                     Agrupación del <code>external_error</code> extraído de los atributos JSON.
                 </p>
-                <div class="chart-space">{{ERRORS}}</div>
+                <div id="chart-errors" class="chart-space">{{ERRORS}}</div>
+                <div class="live-toolbar">
+                    <button type="button" class="run-query-button" data-run="errors">▶ Ejecutar consulta</button>
+                    <span class="query-state" data-query-state="errors" data-state="idle">Listo</span>
+                </div>
                 {{QUERY_ERRORS}}
             </article>
 
-            <article class="analytics-card">
+            <article class="analytics-card" data-card="templates">
                 <header class="card-header">
                     <div>
                         <span class="card-tag">Plantillas</span>
@@ -224,12 +340,16 @@
                 <p class="card-description">
                     Identifica qué plantilla concentra la mayor cantidad de mensajes fallidos.
                 </p>
-                <div class="chart-space">{{TEMPLATES}}</div>
+                <div id="chart-templates" class="chart-space">{{TEMPLATES}}</div>
+                <div class="live-toolbar">
+                    <button type="button" class="run-query-button" data-run="templates">▶ Ejecutar consulta</button>
+                    <span class="query-state" data-query-state="templates" data-state="idle">Listo</span>
+                </div>
                 {{QUERY_TEMPLATES}}
             </article>
         </div>
 
-        <article class="analytics-card full-width">
+        <article class="analytics-card full-width" data-card="categories">
             <header class="card-header">
                 <div>
                     <span class="card-tag">NLP ligero</span>
@@ -241,7 +361,7 @@
                 Clasificación explicable mediante palabras clave para aproximar Pedido, Queja, Soporte y Otros.
             </p>
             <div class="category-layout">
-                <div class="chart-space">{{CATEGORIES}}</div>
+                <div id="chart-categories" class="chart-space">{{CATEGORIES}}</div>
                 <div class="nlp-note">
                     <span class="note-label">Criterio</span>
                     <strong>Clasificación determinística y auditable</strong>
@@ -250,6 +370,10 @@
                         acorde con el alcance junior y el requerimiento de NLP ligero.
                     </p>
                 </div>
+            </div>
+            <div class="live-toolbar">
+                <button type="button" class="run-query-button" data-run="categories">▶ Ejecutar consulta</button>
+                <span class="query-state" data-query-state="categories" data-state="idle">Listo</span>
             </div>
             {{QUERY_CATEGORIES}}
         </article>
@@ -261,18 +385,29 @@
             <span class="section-kicker warning">Hallazgo principal</span>
             <h2>La falla está altamente concentrada y tiene una acción técnica concreta.</h2>
             <p>
-                El error más frecuente concentra aproximadamente <strong>{{TOP_ERROR_PCT}}%</strong> de los fallos
-                y corresponde a <strong>{{TOP_ERROR}}</strong>. La plantilla
-                <strong>{{TOP_TEMPLATE}}</strong> concentra aproximadamente <strong>{{TOP_TEMPLATE_PCT}}%</strong>.
+                El error más frecuente concentra aproximadamente <strong id="finding-error-pct">{{TOP_ERROR_PCT}}%</strong> de los fallos
+                y corresponde a <strong id="finding-error-label">{{TOP_ERROR}}</strong>. La plantilla
+                <strong id="finding-template-label">{{TOP_TEMPLATE}}</strong> concentra aproximadamente <strong id="finding-template-pct">{{TOP_TEMPLATE_PCT}}%</strong>.
                 La acción prioritaria antes del siguiente envío es validar la correspondencia entre parámetros
                 enviados y parámetros definidos en la plantilla.
             </p>
         </div>
     </section>
 
+    <section class="architecture-strip">
+        <div><span>ETL</span><strong>Python + Pandas</strong></div>
+        <div><span>Persistencia</span><strong>PostgreSQL 16</strong></div>
+        <div><span>SQL</span><strong>CTEs + Window Functions</strong></div>
+        <div><span>Dashboard</span><strong>Python + HTML/CSS + JS nativo</strong></div>
+        <div><span>QA</span><strong>Pytest</strong></div>
+        <div><span>Seguridad</span><strong>SQL parametrizado + .env</strong></div>
+    </section>
+
     <footer>
-        <div><strong>Caso LikeU</strong>
+        <div><strong>Caso_LikeU</strong> · Caso técnico Analista de Datos</div>
+        <div>Dashboard interactivo sin framework de visualización · Open Source · Bajo costo</div>
     </footer>
 </main>
+<script src="/static/dashboard.js" defer></script>
 </body>
 </html>

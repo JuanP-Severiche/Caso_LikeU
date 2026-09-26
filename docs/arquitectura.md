@@ -29,7 +29,7 @@ PostgreSQL 16
 Servidor HTTP Python estándar
     │
     ▼
-HTML + CSS
+HTML + CSS + JavaScript nativo
 ```
 
 ## Separación de responsabilidades
@@ -51,3 +51,8 @@ HTML + CSS
 ## Rendimiento / FinOps
 
 Para varios usuarios concurrentes, la estrategia de menor costo es medir primero y reducir trabajo repetido: índices sobre los campos filtrados, vistas/materialized views para agregaciones costosas si el volumen aumenta, pool/proxy de conexiones si se vuelve necesario y medición con `EXPLAIN (ANALYZE, BUFFERS)`. Para este caso técnico, las consultas operan sobre un conjunto pequeño y el servidor HTTP es deliberadamente simple.
+
+
+## Interactividad
+
+El dashboard expone `/api/query` para ejecutar únicamente consultas analíticas predefinidas. El navegador usa `fetch` con JavaScript nativo para solicitar datos con los filtros activos y actualizar la visualización sin recargar la página. El SQL se ejecuta siempre en PostgreSQL y el frontend no contiene lógica de negocio duplicada.

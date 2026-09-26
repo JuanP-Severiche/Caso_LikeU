@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Dashboard analítico de la campaña WhatsApp - Caso LikeU">
+    <title>LikeU Analytics · Campaña WhatsApp</title>
+    <style>:root {
+    --bg: #f2f5f9;
+    --surface: #ffffff;
+    --surface-2: #f8fafc;
+    --surface-3: #eef3f8;
+    --text: #172033;
+    --muted: #687386;
+    --muted-2: #8a94a6;
+    --border: #dfe5ee;
+    --primary: #274690;
+    --primary-2: #4169e1;
+    --primary-soft: #edf2ff;
+    --danger: #b9363e;
+    --danger-soft: #fff1f2;
+    --success: #1f7a5a;
+    --success-soft: #eef9f5;
+    --warning: #a86116;
+    --warning-soft: #fff8ec;
+    --code-bg: #101827;
+    --code-text: #d9e2f1;
+    --shadow-sm: 0 4px 16px rgba(27, 39, 67, .05);
+    --shadow-md: 0 12px 30px rgba(27, 39, 67, .08);
+    --radius-lg: 18px;
+    --radius-md: 13px;
+    --radius-sm: 9px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+    margin: 0;
+    background:
+        radial-gradient(circle at top left, rgba(65,105,225,.05), transparent 28rem),
+        var(--bg);
+    color: var(--text);
+    font-family: Inter, "Segoe UI", Arial, sans-serif;
+    line-height: 1.45;
+}
+
+button, input, select { font: inherit; }
+
+code { font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace; }
+
+.app-header {
+    background: linear-gradient(118deg, #101a37 0%, #1f3977 55%, #3157bd 100%);
+    color: #fff;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.header-inner {
+    width: min(1480px, calc(100% - 48px));
+    margin: 0 auto;
+    padding: 28px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+}
+
+.identity {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.logo-mark {
+    width: 46px;
+    height: 46px;
+    border-radius: 13px;
+    display: grid;
+    place-items: center;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.2);
+    font-weight: 800;
+    letter-spacing: .05em;
+}
+
+.brand,
+.section-kicker,
+.card-tag {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.brand { opacity: .72; }
+
+.identity h1 {
+    margin: 4px 0 0;
+    font-size: 27px;
+    letter-spacing: -.03em;
+}
+
+.identity p {
+    margin: 6px 0 0;
+    color: rgba(255,255,255,.72);
+    font-size: 13px;
+}
+
+.header-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.header-pill {
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.18);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.header-pill.subtle { background: rgba(255,255,255,.06); }
+
+.page-shell {
+    width: min(1480px, calc(100% - 48px));
+    margin: 24px auto 40px;
+}
+
+.hero-panel {
+    padding: 24px 26px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    justify-content: space-between;
+    gap: 28px;
+    align-items: center;
+}
+
+.hero-copy { max-width: 760px; }
+
+.section-kicker { color: var(--primary-2); }
+
+.hero-copy h2,
+.section-heading h2 {
+    margin: 6px 0 8px;
+    letter-spacing: -.03em;
+}
+
+.hero-copy h2 { font-size: 24px; }
+
+.hero-copy p,
+.card-description,
+.nlp-note p,
+.executive-finding p {
+    margin: 0;
+    color: var(--muted);
+}
+
+.dataset-summary {
+    display: grid;
+    grid-template-columns: auto auto minmax(180px, auto);
+    gap: 10px;
+}
+
+.dataset-summary > div {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    min-width: 120px;
+}
+
+.dataset-summary span,
+.architecture-strip span,
+.nlp-note .note-label {
+    display: block;
+    color: var(--muted-2);
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .09em;
+    margin-bottom: 4px;
+}
+
+.dataset-summary strong { font-size: 13px; }
+
+.filter-panel {
+    margin-top: 16px;
+    padding: 16px 18px;
+    display: grid;
+    grid-template-columns: minmax(190px, 1.35fr) repeat(3, minmax(150px, 1fr)) auto auto;
+    gap: 12px;
+    align-items: end;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+}
+
+.filter-title {
+    align-self: center;
+    padding-right: 8px;
+}
+
+.filter-title strong {
+    display: block;
+    margin-top: 3px;
+    font-size: 14px;
+}
+
+.filter-field label {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.filter-field input,
+.filter-field select {
+    width: 100%;
+    height: 40px;
+    padding: 0 11px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: #fff;
+    color: var(--text);
+    font-size: 13px;
+    outline: none;
+}
+
+.filter-field input:focus,
+.filter-field select:focus {
+    border-color: var(--primary-2);
+    box-shadow: 0 0 0 3px rgba(65,105,225,.08);
+}
+
+.primary-button {
+    height: 40px;
+    border: 0;
+    border-radius: 9px;
+    padding: 0 17px;
+    background: var(--primary);
+    color: #fff;
+    font-weight: 750;
+    cursor: pointer;
+}
+
+.primary-button:hover { background: #1e3979; }
+
+.secondary-link {
+    height: 40px;
+    display: grid;
+    place-items: center;
+    padding: 0 8px;
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 750;
+    text-decoration: none;
+}
+
+.section-block { margin-top: 28px; }
+
+.section-heading {
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 18px;
+}
+
+.section-heading h2 {
+    margin-bottom: 0;
+    font-size: 20px;
+}
+
+.requirement-badge,
+.metric-chip {
+    padding: 7px 10px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    background: var(--primary-soft);
+    color: var(--primary);
+    border: 1px solid #dbe4ff;
+    white-space: nowrap;
+}
+
+.requirement-badge.required {
+    background: #edf8f3;
+    color: var(--success);
+    border-color: #d4ecdf;
+}
+
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.kpi-card {
+    min-height: 124px;
+    padding: 18px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+}
+
+.kpi-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 3px;
+    background: #cfd8e8;
+}
+
+.kpi-card.danger {
+    background: linear-gradient(180deg, #fff, var(--danger-soft));
+    border-color: #f0d6d8;
+}
+
+.kpi-card.danger::before { background: var(--danger); }
+
+.kpi-card.success {
+    background: linear-gradient(180deg, #fff, var(--success-soft));
+    border-color: #d6ebe2;
+}
+
+.kpi-card.success::before { background: var(--success); }
+
+.kpi-label {
+    display: block;
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 750;
+}
+
+.kpi-card strong {
+    display: block;
+    margin: 12px 0 6px;
+    font-size: 27px;
+    letter-spacing: -.04em;
+}
+
+.kpi-card small {
+    color: var(--muted-2);
+    font-size: 10.5px;
+}
+
+.dashboard-grid {
+    display: grid;
+    gap: 16px;
+}
+
+.dashboard-grid.two-col { grid-template-columns: 1fr 1fr; }
+
+.analytics-card {
+    padding: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    min-width: 0;
+}
+
+.analytics-card.full-width { margin-top: 16px; }
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.card-tag { color: var(--primary-2); }
+
+.card-header h3 {
+    margin: 5px 0 0;
+    font-size: 17px;
+    letter-spacing: -.02em;
+}
+
+.card-description {
+    margin-top: 8px;
+    font-size: 12px;
+    line-height: 1.55;
+}
+
+.chart-space { margin-top: 22px; min-height: 210px; }
+
+.chart-space.compact { min-height: 235px; }
+
+.bar-row,
+.funnel-row { margin-bottom: 17px; }
+
+.bar-label,
+.funnel-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    margin-bottom: 7px;
+    font-size: 12px;
+}
+
+.bar-label span {
+    max-width: 78%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: #39445a;
+}
+
+.bar-label strong,
+.funnel-header strong { font-size: 12px; }
+
+.bar-label small {
+    margin-left: 5px;
+    color: var(--muted-2);
+    font-weight: 700;
+}
+
+.bar-track {
+    height: 9px;
+    background: #eaf0f6;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    height: 100%;
+    min-width: 3px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-2));
+}
+
+.funnel-row small {
+    display: block;
+    margin-top: 6px;
+    color: var(--muted-2);
+    font-size: 10px;
+}
+
+.sla-grid {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.sla-grid > div {
+    padding: 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+}
+
+.sla-grid span {
+    display: block;
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 750;
+    margin-bottom: 6px;
+}
+
+.sla-grid strong { font-size: 20px; }
+
+.hour-chart {
+    height: 290px;
+    margin-top: 26px;
+    display: flex;
+    align-items: flex-end;
+    gap: 5px;
+    padding: 20px 8px 0;
+    border-bottom: 1px solid var(--border);
+    background:
+        linear-gradient(to top, rgba(223,229,238,.4) 1px, transparent 1px);
+    background-size: 100% 25%;
+    border-radius: 10px 10px 0 0;
+}
+
+.hour-item {
+    flex: 1;
+    min-width: 14px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 5px;
+}
+
+.hour-number {
+    min-height: 14px;
+    color: var(--muted);
+    font-size: 9px;
+    font-weight: 750;
+}
+
+.hour-value {
+    width: 72%;
+    min-height: 2px;
+    border-radius: 5px 5px 0 0;
+    background: linear-gradient(180deg, #6f8cf0, #3157bd);
+    transition: opacity .15s ease;
+}
+
+.hour-item:hover .hour-value { opacity: .76; }
+
+.hour-item > span {
+    color: var(--muted-2);
+    font-size: 9px;
+}
+
+.category-layout {
+    margin-top: 20px;
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(250px, .75fr);
+    gap: 18px;
+}
+
+.category-layout .chart-space { margin-top: 0; min-height: 0; }
+
+.nlp-note {
+    padding: 18px;
+    border-radius: 13px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    align-self: start;
+}
+
+.nlp-note strong {
+    display: block;
+    margin: 5px 0 8px;
+    font-size: 14px;
+}
+
+.nlp-note p {
+    font-size: 11.5px;
+    line-height: 1.6;
+}
+
+.query-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+.query-support {
+    margin-top: 18px;
+    border: 1px solid #dce3ee;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #fbfcfe;
+}
+
+.query-pair .query-support { margin-top: 0; }
+
+.query-support summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 12px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    user-select: none;
+}
+
+.query-support summary::-webkit-details-marker { display: none; }
+
+.query-support[open] summary {
+    border-bottom: 1px solid var(--border);
+    background: #f6f9fc;
+}
+
+.query-summary-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.query-icon {
+    width: 30px;
+    height: 30px;
+    flex: 0 0 30px;
+    display: grid;
+    place-items: center;
+    border-radius: 8px;
+    background: #eaf0fb;
+    color: var(--primary);
+    font-family: Consolas, monospace;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.query-summary-left strong {
+    display: block;
+    font-size: 11.5px;
+}
+
+.query-summary-left small {
+    display: block;
+    margin-top: 2px;
+    color: var(--muted-2);
+    font-size: 10px;
+}
+
+.query-tag {
+    padding: 5px 7px;
+    border-radius: 999px;
+    background: #eef2f7;
+    color: #596579;
+    font-size: 9px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.query-body {
+    padding: 12px;
+    background: #f8fafc;
+}
+
+.query-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 9px;
+    color: var(--muted);
+    font-size: 10px;
+}
+
+.query-meta code {
+    padding: 3px 6px;
+    border-radius: 5px;
+    background: #edf2f7;
+    color: #344257;
+    overflow-wrap: anywhere;
+}
+
+.query-body pre {
+    margin: 0;
+    max-height: 360px;
+    overflow: auto;
+    padding: 15px;
+    border-radius: 10px;
+    background: var(--code-bg);
+    color: var(--code-text);
+    font-size: 10.5px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+}
+
+.executive-finding {
+    margin-top: 28px;
+    padding: 24px;
+    display: flex;
+    gap: 18px;
+    border: 1px solid #efd9b9;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, #fffaf2, #fff6e8);
+}
+
+.finding-mark {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: #c98327;
+    color: #fff;
+    font-size: 20px;
+    font-weight: 900;
+}
+
+.section-kicker.warning { color: var(--warning); }
+
+.executive-finding h2 {
+    margin: 6px 0 8px;
+    font-size: 19px;
+}
+
+.executive-finding p {
+    max-width: 1050px;
+    font-size: 12px;
+    line-height: 1.65;
+}
+
+.architecture-strip {
+    margin-top: 16px;
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+}
+
+.architecture-strip > div {
+    padding: 12px 13px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 11px;
+    box-shadow: var(--shadow-sm);
+}
+
+.architecture-strip strong {
+    display: block;
+    font-size: 11px;
+    line-height: 1.35;
+}
+
+footer {
+    margin-top: 22px;
+    padding: 18px 2px 0;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    color: var(--muted-2);
+    font-size: 10px;
+}
+
+.empty {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+@media (max-width: 1180px) {
+    .dataset-summary { grid-template-columns: 1fr; min-width: 220px; }
+    .filter-panel { grid-template-columns: 1fr 1fr 1fr; }
+    .filter-title { grid-column: 1 / -1; }
+    .primary-button, .secondary-link { width: max-content; }
+    .architecture-strip { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 960px) {
+    .hero-panel { align-items: stretch; flex-direction: column; }
+    .dataset-summary { grid-template-columns: repeat(3, 1fr); }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .dashboard-grid.two-col, .query-pair, .category-layout { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 720px) {
+    .header-inner, .page-shell { width: min(100% - 24px, 1480px); }
+    .header-inner, .section-heading, footer { align-items: flex-start; flex-direction: column; }
+    .header-meta { display: none; }
+    .filter-panel { grid-template-columns: 1fr; }
+    .dataset-summary { grid-template-columns: 1fr; }
+    .requirement-badge { align-self: flex-start; }
+    .architecture-strip { grid-template-columns: repeat(2, 1fr); }
+    .hour-chart { height: 230px; gap: 2px; padding-inline: 2px; }
+    .hour-number { display: none; }
+}
+
+@media (max-width: 500px) {
+    .kpi-grid, .architecture-strip { grid-template-columns: 1fr; }
+    .identity { align-items: flex-start; }
+    .logo-mark { display: none; }
+}
+</style>
+</head>
+<body>
+<header class="app-header">
+    <div class="header-inner">
+        <div class="identity">
+            <div class="logo-mark">LU</div>
+            <div>
+                <span class="brand">LIKEU ANALYTICS</span>
+                <h1>Campaña WhatsApp</h1>
+                <p>Entrega · SLA · Demanda · Calidad · NLP ligero</p>
+            </div>
+        </div>
+        <div class="header-meta">
+            <span class="header-pill">Caso técnico</span>
+            <span class="header-pill subtle">Analista de Datos</span>
+        </div>
+    </div>
+</header>
+
+<main class="page-shell">
+    <section class="hero-panel">
+        <div class="hero-copy">
+            <span class="section-kicker">Resumen ejecutivo</span>
+            <h2>Salud de la campaña y capacidad de respuesta operativa</h2>
+            <p>
+                El tablero consume PostgreSQL sobre la información procesada por el ETL en Python.
+                Cada visualización incluye la consulta SQL que la alimenta para garantizar trazabilidad técnica.
+            </p>
+        </div>
+        <div class="dataset-summary">
+            <div><span>Registros</span><strong>3,687</strong></div>
+            <div><span>Conversaciones</span><strong>2,153</strong></div>
+            <div><span>Periodo</span><strong>2023-07-25 → 2023-08-02</strong></div>
+        </div>
+    </section>
+
+    <form class="filter-panel" method="get" action="/">
+        <div class="filter-title">
+            <span class="section-kicker">Filtros SQL</span>
+            <strong>Segmentación del tablero</strong>
+        </div>
+        <div class="filter-field">
+            <label for="date_from">Fecha inicio</label>
+            <input id="date_from" type="date" name="date_from" value="2023-07-25">
+        </div>
+        <div class="filter-field">
+            <label for="date_to">Fecha fin</label>
+            <input id="date_to" type="date" name="date_to" value="2023-08-02">
+        </div>
+        <div class="filter-field">
+            <label for="status">Estado</label>
+            <select id="status" name="status">
+                <option value="">Todos</option>
+                <option value="failed" >Failed</option>
+                <option value="read" >Read</option>
+                <option value="sent" >Sent</option>
+                <option value="delivered" >Delivered</option>
+            </select>
+        </div>
+        <button class="primary-button" type="submit">Aplicar filtros</button>
+        <a class="secondary-link" href="/">Restablecer</a>
+    </form>
+
+    <section class="section-block">
+        <div class="section-heading">
+            <div>
+                <span class="section-kicker">01 · Indicadores</span>
+                <h2>KPIs de campaña y operación</h2>
+            </div>
+            <span class="requirement-badge">Requerido + complementario</span>
+        </div>
+
+        <div class="kpi-grid">
+            <article class="kpi-card">
+                <span class="kpi-label">Mensajes salientes</span>
+                <strong>2,507</strong>
+                <small>Volumen outgoing filtrado</small>
+            </article>
+            <article class="kpi-card danger">
+                <span class="kpi-label">Tasa de fallos</span>
+                <strong>55.68%</strong>
+                <small>1,396 mensajes failed</small>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-label">Tasa de lectura</span>
+                <strong>28.24%</strong>
+                <small>Mensajes read</small>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-label">Tasa delivered</span>
+                <strong>3.31%</strong>
+                <small>Entrega sin lectura</small>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-label">SLA promedio</span>
+                <strong>127.24 min</strong>
+                <small>Sensible a valores extremos</small>
+            </article>
+            <article class="kpi-card success">
+                <span class="kpi-label">SLA mediana</span>
+                <strong>0.68 min</strong>
+                <small>Valor central de respuesta</small>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-label">SLA P90</span>
+                <strong>81.33 min</strong>
+                <small>90% responde antes de este umbral</small>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-label">Cobertura SLA</span>
+                <strong>85.81%</strong>
+                <small>61 incoming sin acción posterior</small>
+            </article>
+        </div>
+
+        <div class="query-pair">
+            
+    <details class="query-support">
+        <summary>
+            <span class="query-summary-left">
+                <span class="query-icon">&lt;/&gt;</span>
+                <span>
+                    <strong>Consulta de apoyo · KPIs de entrega</strong>
+                    <small>Volumen y tasas de estados sobre mensajes outgoing.</small>
+                </span>
+            </span>
+            <span class="query-tag">SQL</span>
+        </summary>
+        <div class="query-body">
+            <div class="query-meta">
+                <span><strong>Parámetros activos</strong></span>
+                <code>[&quot;2023-07-25&quot;]</code>
+            </div>
+            <pre><code>SELECT 1;</code></pre>
+        </div>
+    </details>
+    
+            
+    <details class="query-support">
+        <summary>
+            <span class="query-summary-left">
+                <span class="query-icon">&lt;/&gt;</span>
+                <span>
+                    <strong>Consulta de apoyo · SLA operativo</strong>
+                    <small>Métricas calculadas desde la vista construida con Window Functions.</small>
+                </span>
+            </span>
+            <span class="query-tag">SQL · SLA</span>
+        </summary>
+        <div class="query-body">
+            <div class="query-meta">
+                <span><strong>Parámetros activos</strong></span>
+                <code>[&quot;2023-07-25&quot;]</code>
+            </div>
+            <pre><code>SELECT 1;</code></pre>
+        </div>
+    </details>
+    
+        </div>
+    </section>
+
+    <section class="section-block">
+        <div class="section-heading">
+            <div>
+                <span class="section-kicker">02 · Insights SQL requeridos</span>
+                <h2>Entrega, SLA y demanda horaria</h2>
+            </div>
+            <span class="requirement-badge required">Núcleo del caso técnico</span>
+        </div>
+
+        <div class="dashboard-grid two-col">
+            <article class="analytics-card">
+                <header class="card-header">
+                    <div>
+                        <span class="card-tag">Funnel de entrega</span>
+                        <h3>Distribución de estados outgoing</h3>
+                    </div>
+                    <span class="metric-chip">CTE</span>
+                </header>
+                <p class="card-description">
+                    Participación de cada estado sobre los mensajes salientes dentro del periodo filtrado.
+                </p>
+                <div class="chart-space compact">
+            <div class="funnel-row">
+                <div class="funnel-header">
+                    <span>Failed</span>
+                    <strong>55.68%</strong>
+                </div>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width:55.68%"></div>
+                </div>
+                <small>1,396 mensajes</small>
+            </div>
+            </div>
+                
+    <details class="query-support">
+        <summary>
+            <span class="query-summary-left">
+                <span class="query-icon">&lt;/&gt;</span>
+                <span>
+                    <strong>Consulta de apoyo · Funnel de entrega</strong>
+                    <small>Agrupa outgoing por estado y calcula su participación porcentual.</small>
+                </span>
+            </span>
+            <span class="query-tag">SQL · CTE</span>
+        </summary>
+        <div class="query-body">
+            <div class="query-meta">
+                <span><strong>Parámetros activos</strong></span>
+                <code>[&quot;2023-07-25&quot;]</code>
+            </div>
+            <pre><code>SELECT 1;</code></pre>
+        </div>
+    </details>
+    
+            </article>
+
+            <article class="analytics-card">
+                <header class="card-header">
+                    <div>
+                        <span class="card-tag">SLA operativo</span>
+                        <h3>Promedio vs. distribución</h3>
+                    </div>
+                    <span class="metric-chip">Window Function</span>
+                </header>
+                <p class="card-description">
+                    La diferencia entre promedio y mediana revela esperas largas que distorsionan el promedio.
+                </p>
+                <div class="sla-grid">
+                    <div><span>Promedio</span><strong>127.24 min</strong></div>
+                    <div><span>Mediana</span><strong>0.68 min</strong></div>
+                    <div><span>P90</span><strong>81.33 min</strong></div>
+                    <div><span>Cobertura</span><strong>85.81%</strong></div>
+                </div>
+                
+    <details class="query-support">
+        <summary>
+            <span class="query-summary-left">
+                <span class="query-icon">&lt;/&gt;</span>
+                <span>
+                    <strong>Consulta de apoyo · SLA operativo</strong>
+                    <small>Métricas calculadas desde la vista construida con Window Functions.</small>
+                </span>
+            </span>
+            <span class="query-tag">SQL · SLA</span>
+        </summary>
+        <div class="query-body">
+            <div class="query-meta">
+                <span><strong>Parámetros activos</strong></span>
+                <code>[&quot;2023-07-25&quot;]</code>
+            </div>
+            <pre><code>SELECT 1;</code></pre>
+        </div>
+    </details>
+    
+            </article>
+        </div>
+
+        <article class="analytics-card full-width">
+            <header class="card-header">
+                <div>
+                    <span class="card-tag">Curva de calor horaria</span>
+                    <h3>Volumen de mensajes incoming por hora</h3>
+                </div>
+                <span class="metric-chip">Workforce Management</span>
+            </header>
+            <p class="card-description">
+                Distribución de demanda para identificar franjas donde conviene reforzar la capacidad operativa.
+            </p>
+            <div class="hour-chart">
+            <div class="hour-item" title="00:00 · 0 mensajes">
+                <div class="hour-number"></div>
+                <div class="hour-value" style="height:1.50%"></div>
+                <span>00</span>
+            </div>
+            
+
+            <div class="hour-item" title="01:00 · 1 mensajes">
+                <div class="hour-number">1</div>
+                <div class="hour-value" style="height:16.67%"></div>
+                <span>01</span>
+            </div>
+            
+
+            <div class="hour-item" title="02:00 · 2 mensajes">
+                <div class="hour-number">2</div>
+                <div class="hour-value" style="height:33.33%"></div>
+                <span>02</span>
+            </div>
+            
+
+            <div class="hour-item" title="03:00 · 3 mensajes">
+                <div class="hour-number">3</div>
+                <div class="hour-value" style="height:50.00%"></div>
+                <span>03</span>
+            </div>
+            
+
+            <div class="hour-item" title="04:00 · 4 mensajes">
+                <div class="hour-number">4</div>
+                <div class="hour-value" style="height:66.67%"></div>
+                <span>04</span>
+            </div>
+            
+
+            <div class="hour-item" title="05:00 · 5 mensajes">
+                <div class="hour-number">5</div>
+                <div class="hour-value" style="height:83.33%"></div>
+                <span>05</span>
+            </div>
+            
+
+            <div class="hour-item" title="06:00 · 6 mensajes">
+                <div class="hour-number">6</div>
+                <div class="hour-value" style="height:100.00%"></div>
+                <span>06</span>
+            </div>
+            
+
+            <div class="hour-item" title="07:00 · 0 mensajes">
+                <div class="hour-number"></div>
+                <div class="hour-value" style="height:1.50%"></div>
+                <span>07</span>
+            </div>
+            
+
+            <div class="hour-item" title="08:00 · 1 mensajes">
+                <div class="hour-number">1</div>
+                <div class="hour-value" style="height:16.67%"></div>
+                <span>08</span>
+            </div>
+            
+
+            <div class="hour-item" title="09:00 · 2 mensajes">
+                <div class="hour-number">2</div>
+                <div class="hour-value" style="height:33.33%"></div>
+                <span>09</span>
+            </div>
+            
+
+            <div class="hour-item" title="10:00 · 3 mensajes">
+                <div class="hour-number">3</div>
+                <div class="hour-value" style="height:50.00%"></div>
+                <span>10</span>
+            </div>
+            
+
+            <div class="hour-item" title="11:00 · 4 mensajes">
+                <div class="hour-number">4</div>
+                <div class="hour-value" style="height:66.67%"></div>
+                <span>11</span>
+            </div>
+            
+
+            <div class="hour-item" title="12:00 · 5 mensajes">
+                <div class="hour-number">5</div>
+                <div class="hour-value" style="height:83.33%"></div>
+                <span>12</span>
+            </div>
+            
+
+            <div class="hour-item" title="13:00 · 6 mensajes">
+                <div class="hour-number">6</div>
+                <div class="hour-value" style="height:100.00%"></div>
+                <span>13</span>
+            </div>
+            
+
+            <div class="hour-item" title="14:00 · 0 mensajes">
+                <div class="hour-number"></div>
+                <div class="hour-value" style="height:1.50%"></div>
+                <span>14</span>
+            </div>
+            
+
+            <div class="hour-item" title="15:00 · 1 mensajes">
+                <div class="hour-number">1</div>
+                <div class="hour-value" style="height:16.67%"></div>
+                <span>15</span>
+            </div>
+            
+
+            <div class="hour-item" title="16:00 · 2 mensajes">
+                <div class="hour-number">2</div>
+                <div class="hour-value" style="height:33.33%"></div>
+                <span>16</span>
+            </div>
+            
+
+            <div class="hour-item" title="17:00 · 3 mensajes">
+                <div class="hour-number">3</div>
+                <div class="hour-value" style="height:50.00%"></div>
+                <span>17</span>
+            </div>
+            
+
+            <div class="hour-item" title="18:00 · 4 mensajes">
+                <div class="hour-number">4</div>
+                <div class="hour-value" style="height:66.67%"></div>
+                <span>18</span>
+            </div>
+            
+
+            <div class="hour-item" title="19:00 · 5 mensajes">
+                <div class="hour-number">5</div>
+                <div class="hour-value" style="height:83.33%"></div>
+                <span>19</span>
+            </div>
+            
+
+            <div class="hour-item" title="20:00 · 6 mensajes">
+                <div class="hour-number">6</div>
+                <div class="hour-value" style="height:100.00%"></div>
+                <span>20</span>
+            </div>
+            
+
+            <div class="hour-item" title="21:00 · 0 mensajes">
+                <div class="hour-number"></div>
+                <div class="hour-value" style="height:1.50%"></div>
+                <span>21</span>
+            </div>
+            
+
+            <div class="hour-item" title="22:00 · 1 mensajes">
+                <div class="hour-number">1</div>
+                <div class="hour-value" style="height:16.67%"></div>
+                <span>22</span>
+            </div>
+            
+
+            <div class="hour-item" title="23:00 · 2 mensajes">
+                <div class="hour-number">2</div>
+                <div class="hour-value" style="height:33.33%"></div>
+                <span>23</span>
+            </div>
+            </div>
+            
+    <details class="query-support">
+        <summary>
+            <span class="query-summary-left">
+                <span class="query-icon">&lt;/&gt;</span>
+                <span>
+                    <strong>Consulta de apoyo · Curva horaria</strong>
+                    <small>Cuenta mensajes incoming por hora y completa las 24 franjas.</small>
+                </span>
+            </span>
+            <span class="query-tag">SQL · CTE</span>
+        </summary>
+        <div class="query-body">
+            <div class="query-meta">
+                <span><strong>Parámetros activos</strong></span>
+                <code>[&quot;2023-07-25&quot;]</code>
+            </div>
+            <pre><code>SELECT 1;</code></pre>
+        </div>
+    </details>
+    
+        </article>
+    </section>
+
+    <section class="section-block">
+        <div class="section-heading">
+            <div>
+                <span class="section-kicker">03 · Diagnóstico de negocio</span>
+                <h2>Origen de fallos y comportamiento del cliente</h2>
+            </div>
+            <span class="requirement-badge">Análisis complementario</span>
+        </div>
+
+        <div class="dashboard-grid two-col">
+            <article class="analytics-card">
+                <header class="card-header">
+                    <div>
+                        <span class="card-tag">Calidad técnica</span>
+                        <h3>Principales errores de entrega</h3>
+                    </div>
+                    <span class="metric-chip">Failed</span>
+                </header>
+                <p class="card-description">
+                    Agrupación del <code>external_error</code> extraído de los atributos JSON.
+                </p>
+                <div class="chart-space">
+            <div class="bar-row" title="params: 1374">
+                <div class="bar-label">
+                    <span title="params">params</span>
+                    <strong>1,374 <small>98.42%</small></strong>
+                </div>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width:100.00%"></div>
+                </div>
+            </div>
+            </div>
+                
+    <details class="query-support">
+        <summary>
+            <span class="query-summary-left">
+                <span class="query-icon">&lt;/&gt;</span>
+                <span>
+                    <strong>Consulta de apoyo · Errores de entrega</strong>
+                    <small>Agrupa mensajes failed por external_error.</small>
+                </span>
+            </span>
+            <span class="query-tag">SQL</span>
+        </summary>
+        <div class="query-body">
+            <div class="query-meta">
+                <span><strong>Parámetros activos</strong></span>
+                <code>[&quot;2023-07-25&quot;]</code>
+            </div>
+            <pre><code>SELECT 1;</code></pre>
+        </div>
+    </details>
+    
+            </article>
+
+            <article class="analytics-card">
+                <header class="card-header">
+                    <div>
+                        <span class="card-tag">Plantillas</span>
+                        <h3>Concentración de fallos por plantilla</h3>
+                    </div>
+                    <span class="metric-chip">JSON parsing</span>
+                </header>
+                <p class="card-description">
+                    Identifica qué plantilla concentra la mayor cantidad de mensajes fallidos.
+                </p>
+                <div class="chart-space">
+            <div class="bar-row" title="lanzamiento_: 1352">
+                <div class="bar-label">
+                    <span title="lanzamiento_">lanzamiento_</span>
+                    <strong>1,352 <small>96.85%</small></strong>
+                </div>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width:100.00%"></div>
+                </div>
+            </div>
+            </div>
+                
+    <details class="query-support">
+        <summary>
+            <span class="query-summary-left">
+                <span class="query-icon">&lt;/&gt;</span>
+                <span>
+                    <strong>Consulta de apoyo · Fallos por plantilla</strong>
+                    <small>Agrupa mensajes failed por template_name extraído del JSON.</small>
+                </span>
+            </span>
+            <span class="query-tag">SQL</span>
+        </summary>
+        <div class="query-body">
+            <div class="query-meta">
+                <span><strong>Parámetros activos</strong></span>
+                <code>[&quot;2023-07-25&quot;]</code>
+            </div>
+            <pre><code>SELECT 1;</code></pre>
+        </div>
+    </details>
+    
+            </article>
+        </div>
+
+        <article class="analytics-card full-width">
+            <header class="card-header">
+                <div>
+                    <span class="card-tag">NLP ligero</span>
+                    <h3>Clasificación de mensajes incoming</h3>
+                </div>
+                <span class="metric-chip">Keywords</span>
+            </header>
+            <p class="card-description">
+                Clasificación explicable mediante palabras clave para aproximar Pedido, Queja, Soporte y Otros.
+            </p>
+            <div class="category-layout">
+                <div class="chart-space">
+            <div class="bar-row" title="Otros: 100">
+                <div class="bar-label">
+                    <span title="Otros">Otros</span>
+                    <strong>100 <small>23.26%</small></strong>
+                </div>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width:100.00%"></div>
+                </div>
+            </div>
+            </div>
+                <div class="nlp-note">
+                    <span class="note-label">Criterio</span>
+                    <strong>Clasificación determinística y auditable</strong>
+                    <p>
+                        Se priorizan reglas explícitas y reproducibles sobre modelos complejos,
+                        acorde con el alcance junior y el requerimiento de NLP ligero.
+                    </p>
+                </div>
+            </div>
+            
+    <details class="query-support">
+        <summary>
+            <span class="query-summary-left">
+                <span class="query-icon">&lt;/&gt;</span>
+                <span>
+                    <strong>Consulta de apoyo · Clasificación NLP</strong>
+                    <small>Agrupa incoming por la categoría generada por el clasificador de palabras clave.</small>
+                </span>
+            </span>
+            <span class="query-tag">SQL</span>
+        </summary>
+        <div class="query-body">
+            <div class="query-meta">
+                <span><strong>Parámetros activos</strong></span>
+                <code>[&quot;2023-07-25&quot;]</code>
+            </div>
+            <pre><code>SELECT 1;</code></pre>
+        </div>
+    </details>
+    
+        </article>
+    </section>
+
+    <section class="executive-finding">
+        <div class="finding-mark">!</div>
+        <div>
+            <span class="section-kicker warning">Hallazgo principal</span>
+            <h2>La falla está altamente concentrada y tiene una acción técnica concreta.</h2>
+            <p>
+                El error más frecuente concentra aproximadamente <strong>98.42%</strong> de los fallos
+                y corresponde a <strong>params</strong>. La plantilla
+                <strong>lanzamiento_</strong> concentra aproximadamente <strong>96.85%</strong>.
+                La acción prioritaria antes del siguiente envío es validar la correspondencia entre parámetros
+                enviados y parámetros definidos en la plantilla.
+            </p>
+        </div>
+    </section>
+
+    <section class="architecture-strip">
+        <div><span>ETL</span><strong>Python + Pandas</strong></div>
+        <div><span>Persistencia</span><strong>PostgreSQL 16</strong></div>
+        <div><span>SQL</span><strong>CTEs + Window Functions</strong></div>
+        <div><span>Dashboard</span><strong>Python estándar + HTML/CSS</strong></div>
+        <div><span>QA</span><strong>Pytest</strong></div>
+        <div><span>Seguridad</span><strong>SQL parametrizado + .env</strong></div>
+    </section>
+
+    <footer>
+        <div><strong>Caso_LikeU</strong> · Caso técnico Analista de Datos</div>
+        <div>Dashboard sin framework de visualización · Open Source · Bajo costo</div>
+    </footer>
+</main>
+</body>
+</html>
