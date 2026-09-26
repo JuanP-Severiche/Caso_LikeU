@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Dashboard analítico de la campaña WhatsApp - Caso LikeU">
+    <title>LikeU Analytics · Campaña WhatsApp</title>
+    <style>{{CSS}}</style>
+</head>
+<body>
+<header class="topbar">
+    <div class="topbar-inner">
+        <div>
+            <span class="brand">LIKEU ANALYTICS</span>
+            <h1>Campaña WhatsApp</h1>
+            <p>Monitoreo operativo · Entrega · SLA · Demanda · Calidad</p>
+        </div>
+        <div class="badge">Caso técnico · Analista de Datos</div>
+    </div>
+</header>
+
+<main class="container">
+    <section class="intro-row">
+        <div>
+            <span class="eyebrow">Panel ejecutivo</span>
+            <h2>Salud de la campaña y respuesta operativa</h2>
+            <p>El tablero consulta PostgreSQL en tiempo real sobre los datos previamente procesados por el ETL.</p>
+        </div>
+        <div class="dataset-chip">{{RECORDS}} registros · {{CONVERSATIONS}} conversaciones · {{MIN_DATE}} a {{MAX_DATE}}</div>
+    </section>
+
+    <form class="filters" method="get" action="/">
+        <div>
+            <label for="date_from">Fecha inicio</label>
+            <input id="date_from" type="date" name="date_from" value="{{DATE_FROM}}">
+        </div>
+        <div>
+            <label for="date_to">Fecha fin</label>
+            <input id="date_to" type="date" name="date_to" value="{{DATE_TO}}">
+        </div>
+        <div>
+            <label for="status">Estado</label>
+            <select id="status" name="status">
+                <option value="">Todos</option>
+                <option value="failed" {{SELECT_FAILED}}>Failed</option>
+                <option value="read" {{SELECT_READ}}>Read</option>
+                <option value="sent" {{SELECT_SENT}}>Sent</option>
+                <option value="delivered" {{SELECT_DELIVERED}}>Delivered</option>
+            </select>
+        </div>
+        <button type="submit">Aplicar filtros</button>
+        <a class="clear-link" href="/">Restablecer</a>
+    </form>
+
+    <section class="kpi-grid">
+        <article class="kpi"><span>Mensajes salientes</span><strong>{{OUTGOING}}</strong><small>Volumen filtrado</small></article>
+        <article class="kpi danger"><span>Tasa de fallos</span><strong>{{FAILED_PCT}}%</strong><small>{{FAILED_MESSAGES}} mensajes fallidos</small></article>
+        <article class="kpi"><span>Tasa de lectura</span><strong>{{READ_PCT}}%</strong><small>Mensajes en estado read</small></article>
+        <article class="kpi"><span>Tasa delivered</span><strong>{{DELIVERED_PCT}}%</strong><small>Entrega sin lectura</small></article>
+        <article class="kpi"><span>SLA promedio</span><strong>{{AVG_SLA}} min</strong><small>Sensible a valores extremos</small></article>
+        <article class="kpi good"><span>SLA mediana</span><strong>{{MEDIAN_SLA}} min</strong><small>Tiempo central de respuesta</small></article>
+        <article class="kpi"><span>SLA P90</span><strong>{{P90_SLA}} min</strong><small>90% responde antes de este valor</small></article>
+        <article class="kpi"><span>Cobertura SLA</span><strong>{{COVERAGE}}%</strong><small>{{UNANSWERED}} incoming sin acción posterior</small></article>
+    </section>
+
+    <section class="two-columns">
+        <article class="card">
+            <header><div><span class="eyebrow">Entrega</span><h2>Funnel de estados</h2></div><p>Participación de cada estado sobre los mensajes salientes filtrados.</p></header>
+            {{FUNNEL}}
+        </article>
+        <article class="card insight-card">
+            <header><div><span class="eyebrow">Lectura del SLA</span><h2>Promedio vs. distribución</h2></div></header>
+            <div class="sla-compare">
+                <div><span>Promedio</span><strong>{{AVG_SLA}} min</strong></div>
+                <div><span>Mediana</span><strong>{{MEDIAN_SLA}} min</strong></div>
+                <div><span>P90</span><strong>{{P90_SLA}} min</strong></div>
+                <div><span>Cobertura</span><strong>{{COVERAGE}}%</strong></div>
+            </div>
+            <p class="note">La diferencia entre promedio y mediana indica una distribución sesgada por conversaciones con esperas excepcionalmente largas.</p>
+        </article>
+    </section>
+
+    <section class="card">
+        <header><div><span class="eyebrow">Workforce management</span><h2>Volumen incoming por hora</h2></div><p>Distribución horaria para identificar franjas de mayor demanda.</p></header>
+        <div class="hour-chart">{{HOURLY}}</div>
+    </section>
+
+    <section class="two-columns">
+        <article class="card">
+            <header><div><span class="eyebrow">Calidad técnica</span><h2>Principales errores de entrega</h2></div><p>Concentración de los motivos registrados en mensajes failed.</p></header>
+            {{ERRORS}}
+        </article>
+        <article class="card">
+            <header><div><span class="eyebrow">Campaña</span><h2>Plantillas con fallos</h2></div><p>Fallos agrupados por plantilla identificada en los atributos del mensaje.</p></header>
+            {{TEMPLATES}}
+        </article>
+    </section>
+
+    <section class="card">
+        <header><div><span class="eyebrow">NLP ligero</span><h2>Clasificación de mensajes entrantes</h2></div><p>Categorización explicable por palabras clave: Pedido, Queja, Soporte y Otros.</p></header>
+        {{CATEGORIES}}
+    </section>
+
+    <section class="finding">
+        <div class="finding-icon">!</div>
+        <div>
+            <span>Hallazgo principal</span>
+            <h2>La falla está altamente concentrada y es accionable.</h2>
+            <p>El error más frecuente concentra aproximadamente <strong>{{TOP_ERROR_PCT}}%</strong> de los fallos. La plantilla <strong>{{TOP_TEMPLATE}}</strong> concentra aproximadamente <strong>{{TOP_TEMPLATE_PCT}}%</strong> de los mensajes failed. Antes del próximo envío, la acción prioritaria es validar la correspondencia entre parámetros enviados y parámetros definidos en la plantilla.</p>
+        </div>
+    </section>
+
+    <section class="methodology">
+        <div><strong>ETL</strong><span>Python + Pandas</span></div>
+        <div><strong>Persistencia</strong><span>PostgreSQL 16</span></div>
+        <div><strong>SQL</strong><span>CTEs + Window Functions</span></div>
+        <div><strong>Visualización</strong><span>Python estándar + HTML/CSS</span></div>
+        <div><strong>Pruebas</strong><span>Pytest</span></div>
+    </section>
+
+    <footer>Caso LikeU</footer>
+</main>
+</body>
+</html>

@@ -1,0 +1,59 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: likeu_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./sql/05_dashboard_views.sql:/docker-entrypoint-initdb.d/05_dashboard_views.sql:ro
+      - ./sql/06_indexes.sql:/docker-entrypoint-initdb.d/06_indexes.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: likeu_dashboard
+    command: ["python", "-m", "dashboard.server"]
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "${DASHBOARD_PORT:-8000}:8000"
+    volumes:
+      - ./dashboard:/app/dashboard:ro
+      - ./src:/app/src:ro
+    restart: unless-stopped
+
+  etl:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: likeu_etl
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./data:/app/data
+      - ./src:/app/src
+      - ./tests:/app/tests
+      - ./sql:/app/sql
+    profiles: ["tools"]
+
+volumes:
+  postgres_data:
