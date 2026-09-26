@@ -34,3 +34,14 @@ Como complemento se crea `vw_incoming_human_sla_detail`, que mide `incoming` →
 ## 6. Calidad
 
 Se incluyen pruebas unitarias para limpieza, parser JSON y clasificación, además de una prueba de integración contra el archivo entregado.
+
+
+## 7. Trazabilidad visual → SQL
+
+Cada gráfica expone un bloque desplegable "Consulta de apoyo". El SQL mostrado no es una copia independiente: se obtiene de los mismos constructores de consulta que usa el backend para ejecutar la visualización. Así se evita que la documentación y la lógica real diverjan.
+
+Los valores de filtro siguen enviándose por parámetros de `psycopg`, por lo que el tablero muestra los placeholders y la lista de parámetros activos sin concatenar entradas del navegador dentro de SQL.
+
+## 8. Diseño del dashboard
+
+La interfaz se organiza en tres niveles: indicadores ejecutivos, insights exigidos por el caso y análisis complementario. Los elementos "Requerido" diferencian lo solicitado en el enunciado de métricas adicionales como mediana, P90, errores por plantilla y NLP. Esto mantiene el alcance defendible para un perfil junior sin perder calidad de presentación.

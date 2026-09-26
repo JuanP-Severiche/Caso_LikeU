@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from html import escape
 from pathlib import Path
 from typing import Any
@@ -18,12 +19,17 @@ def format_number(value: Any, decimals: int = 2) -> str:
     return f"{value:,}"
 
 
-def horizontal_bars(rows: list[dict[str, Any]], label_key: str = "label", value_key: str = "total") -> str:
+def horizontal_bars(
+    rows: list[dict[str, Any]],
+    label_key: str = "label",
+    value_key: str = "total",
+) -> str:
     if not rows:
         return '<p class="empty">Sin datos disponibles</p>'
 
     maximum = max(float(row[value_key] or 0) for row in rows) or 1
     html: list[str] = []
+
     for row in rows:
         label = escape(str(row[label_key]))
         value = float(row[value_key] or 0)
@@ -33,30 +39,37 @@ def horizontal_bars(rows: list[dict[str, Any]], label_key: str = "label", value_
             f"""
             <div class="bar-row" title="{label}: {value:g}">
                 <div class="bar-label">
-                    <span>{label}</span>
-                    <strong>{format_number(int(value))} <small>({percentage:.2f}%)</small></strong>
+                    <span title="{label}">{label}</span>
+                    <strong>{format_number(int(value), 0)} <small>{percentage:.2f}%</small></strong>
                 </div>
-                <div class="bar-track"><div class="bar-fill" style="width:{width:.2f}%"></div></div>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width:{width:.2f}%"></div>
+                </div>
             </div>
             """
         )
+
     return "\n".join(html)
 
 
 def funnel_bars(rows: list[dict[str, Any]]) -> str:
     if not rows:
         return '<p class="empty">Sin datos disponibles</p>'
+
     html: list[str] = []
     for row in rows:
         percentage = float(row["percentage"] or 0)
+        status = escape(str(row["status"]).title())
         html.append(
             f"""
             <div class="funnel-row">
                 <div class="funnel-header">
-                    <span>{escape(str(row['status']).title())}</span>
+                    <span>{status}</span>
                     <strong>{percentage:.2f}%</strong>
                 </div>
-                <div class="bar-track"><div class="bar-fill" style="width:{percentage:.2f}%"></div></div>
+                <div class="bar-track">
+                    <div class="bar-fill" style="width:{percentage:.2f}%"></div>
+                </div>
                 <small>{format_number(row['messages'], 0)} mensajes</small>
             </div>
             """
@@ -67,8 +80,10 @@ def funnel_bars(rows: list[dict[str, Any]]) -> str:
 def hourly_chart(rows: list[dict[str, Any]]) -> str:
     if not rows:
         return '<p class="empty">Sin datos disponibles</p>'
+
     maximum = max(float(row["incoming_messages"] or 0) for row in rows) or 1
     bars: list[str] = []
+
     for row in rows:
         total = int(row["incoming_messages"] or 0)
         height = total / maximum * 100
@@ -82,11 +97,47 @@ def hourly_chart(rows: list[dict[str, Any]]) -> str:
             </div>
             """
         )
+
     return "\n".join(bars)
 
 
 def option_selected(current: str, value: str) -> str:
     return "selected" if current == value else ""
+
+
+def sql_support_block(
+    title: str,
+    description: str,
+    support: dict[str, Any] | None,
+    *,
+    tag: str = "SQL",
+) -> str:
+    support = support or {}
+    sql = escape(str(support.get("sql") or "-- Consulta no disponible"))
+    params = support.get("params") or []
+    params_text = escape(json.dumps(params, ensure_ascii=False, default=str))
+
+    return f"""
+    <details class="query-support">
+        <summary>
+            <span class="query-summary-left">
+                <span class="query-icon">&lt;/&gt;</span>
+                <span>
+                    <strong>{escape(title)}</strong>
+                    <small>{escape(description)}</small>
+                </span>
+            </span>
+            <span class="query-tag">{escape(tag)}</span>
+        </summary>
+        <div class="query-body">
+            <div class="query-meta">
+                <span><strong>Parámetros activos</strong></span>
+                <code>{params_text}</code>
+            </div>
+            <pre><code>{sql}</code></pre>
+        </div>
+    </details>
+    """
 
 
 def render_dashboard(
@@ -98,6 +149,7 @@ def render_dashboard(
     templates: list[dict[str, Any]],
     categories: list[dict[str, Any]],
     summary: dict[str, Any],
+    query_support: dict[str, dict[str, Any]] | None,
     date_from: str,
     date_to: str,
     status: str,
@@ -105,7 +157,8 @@ def render_dashboard(
     template = TEMPLATE_FILE.read_text(encoding="utf-8")
     css = CSS_FILE.read_text(encoding="utf-8")
 
-    top_error = errors[0] if errors else {"percentage": 0}
+    query_support = query_support or {}
+    top_error = errors[0] if errors else {"percentage": 0, "label": "Sin datos"}
     top_template = templates[0] if templates else {"label": "Sin datos", "percentage": 0}
 
     replacements = {
@@ -136,10 +189,50 @@ def render_dashboard(
         "{{MIN_DATE}}": escape(str(summary.get("min_date") or "-")),
         "{{MAX_DATE}}": escape(str(summary.get("max_date") or "-")),
         "{{TOP_ERROR_PCT}}": format_number(top_error.get("percentage")),
+        "{{TOP_ERROR}}": escape(str(top_error.get("label") or "Sin datos")),
         "{{TOP_TEMPLATE}}": escape(str(top_template.get("label") or "Sin datos")),
         "{{TOP_TEMPLATE_PCT}}": format_number(top_template.get("percentage")),
+        "{{QUERY_KPIS}}": sql_support_block(
+            "Consulta de apoyo · KPIs de entrega",
+            "Volumen y tasas de estados sobre mensajes outgoing.",
+            query_support.get("kpis"),
+        ),
+        "{{QUERY_SLA}}": sql_support_block(
+            "Consulta de apoyo · SLA operativo",
+            "Métricas calculadas desde la vista construida con Window Functions.",
+            query_support.get("sla"),
+            tag="SQL · SLA",
+        ),
+        "{{QUERY_FUNNEL}}": sql_support_block(
+            "Consulta de apoyo · Funnel de entrega",
+            "Agrupa outgoing por estado y calcula su participación porcentual.",
+            query_support.get("funnel"),
+            tag="SQL · CTE",
+        ),
+        "{{QUERY_HOURLY}}": sql_support_block(
+            "Consulta de apoyo · Curva horaria",
+            "Cuenta mensajes incoming por hora y completa las 24 franjas.",
+            query_support.get("hourly"),
+            tag="SQL · CTE",
+        ),
+        "{{QUERY_ERRORS}}": sql_support_block(
+            "Consulta de apoyo · Errores de entrega",
+            "Agrupa mensajes failed por external_error.",
+            query_support.get("errors"),
+        ),
+        "{{QUERY_TEMPLATES}}": sql_support_block(
+            "Consulta de apoyo · Fallos por plantilla",
+            "Agrupa mensajes failed por template_name extraído del JSON.",
+            query_support.get("templates"),
+        ),
+        "{{QUERY_CATEGORIES}}": sql_support_block(
+            "Consulta de apoyo · Clasificación NLP",
+            "Agrupa incoming por la categoría generada por el clasificador de palabras clave.",
+            query_support.get("categories"),
+        ),
     }
 
     for key, value in replacements.items():
         template = template.replace(key, str(value))
+
     return template

@@ -8,37 +8,53 @@
     <style>{{CSS}}</style>
 </head>
 <body>
-<header class="topbar">
-    <div class="topbar-inner">
-        <div>
-            <span class="brand">LIKEU ANALYTICS</span>
-            <h1>Campaña WhatsApp</h1>
-            <p>Monitoreo operativo · Entrega · SLA · Demanda · Calidad</p>
+<header class="app-header">
+    <div class="header-inner">
+        <div class="identity">
+            <div>
+                <span class="brand">LIKEU ANALYTICS</span>
+                <h1>Campaña WhatsApp</h1>
+                <p>Entrega · SLA · Demanda · Calidad · NLP ligero</p>
+            </div>
         </div>
-        <div class="badge">Caso técnico · Analista de Datos</div>
+        <div class="header-meta">
+            <span class="header-pill">Caso técnico</span>
+            <span class="header-pill subtle">Analista de Datos</span>
+        </div>
     </div>
 </header>
 
-<main class="container">
-    <section class="intro-row">
-        <div>
-            <span class="eyebrow">Panel ejecutivo</span>
-            <h2>Salud de la campaña y respuesta operativa</h2>
-            <p>El tablero consulta PostgreSQL en tiempo real sobre los datos previamente procesados por el ETL.</p>
+<main class="page-shell">
+    <section class="hero-panel">
+        <div class="hero-copy">
+            <span class="section-kicker">Resumen ejecutivo</span>
+            <h2>Salud de la campaña y capacidad de respuesta operativa</h2>
+            <p>
+                El tablero consume PostgreSQL sobre la información procesada por el ETL en Python.
+                Cada visualización incluye la consulta SQL que la alimenta para garantizar trazabilidad técnica.
+            </p>
         </div>
-        <div class="dataset-chip">{{RECORDS}} registros · {{CONVERSATIONS}} conversaciones · {{MIN_DATE}} a {{MAX_DATE}}</div>
+        <div class="dataset-summary">
+            <div><span>Registros</span><strong>{{RECORDS}}</strong></div>
+            <div><span>Conversaciones</span><strong>{{CONVERSATIONS}}</strong></div>
+            <div><span>Periodo</span><strong>{{MIN_DATE}} → {{MAX_DATE}}</strong></div>
+        </div>
     </section>
 
-    <form class="filters" method="get" action="/">
-        <div>
+    <form class="filter-panel" method="get" action="/">
+        <div class="filter-title">
+            <span class="section-kicker">Filtros SQL</span>
+            <strong>Segmentación del tablero</strong>
+        </div>
+        <div class="filter-field">
             <label for="date_from">Fecha inicio</label>
             <input id="date_from" type="date" name="date_from" value="{{DATE_FROM}}">
         </div>
-        <div>
+        <div class="filter-field">
             <label for="date_to">Fecha fin</label>
             <input id="date_to" type="date" name="date_to" value="{{DATE_TO}}">
         </div>
-        <div>
+        <div class="filter-field">
             <label for="status">Estado</label>
             <select id="status" name="status">
                 <option value="">Todos</option>
@@ -48,77 +64,215 @@
                 <option value="delivered" {{SELECT_DELIVERED}}>Delivered</option>
             </select>
         </div>
-        <button type="submit">Aplicar filtros</button>
-        <a class="clear-link" href="/">Restablecer</a>
+        <button class="primary-button" type="submit">Aplicar filtros</button>
+        <a class="secondary-link" href="/">Restablecer</a>
     </form>
 
-    <section class="kpi-grid">
-        <article class="kpi"><span>Mensajes salientes</span><strong>{{OUTGOING}}</strong><small>Volumen filtrado</small></article>
-        <article class="kpi danger"><span>Tasa de fallos</span><strong>{{FAILED_PCT}}%</strong><small>{{FAILED_MESSAGES}} mensajes fallidos</small></article>
-        <article class="kpi"><span>Tasa de lectura</span><strong>{{READ_PCT}}%</strong><small>Mensajes en estado read</small></article>
-        <article class="kpi"><span>Tasa delivered</span><strong>{{DELIVERED_PCT}}%</strong><small>Entrega sin lectura</small></article>
-        <article class="kpi"><span>SLA promedio</span><strong>{{AVG_SLA}} min</strong><small>Sensible a valores extremos</small></article>
-        <article class="kpi good"><span>SLA mediana</span><strong>{{MEDIAN_SLA}} min</strong><small>Tiempo central de respuesta</small></article>
-        <article class="kpi"><span>SLA P90</span><strong>{{P90_SLA}} min</strong><small>90% responde antes de este valor</small></article>
-        <article class="kpi"><span>Cobertura SLA</span><strong>{{COVERAGE}}%</strong><small>{{UNANSWERED}} incoming sin acción posterior</small></article>
-    </section>
-
-    <section class="two-columns">
-        <article class="card">
-            <header><div><span class="eyebrow">Entrega</span><h2>Funnel de estados</h2></div><p>Participación de cada estado sobre los mensajes salientes filtrados.</p></header>
-            {{FUNNEL}}
-        </article>
-        <article class="card insight-card">
-            <header><div><span class="eyebrow">Lectura del SLA</span><h2>Promedio vs. distribución</h2></div></header>
-            <div class="sla-compare">
-                <div><span>Promedio</span><strong>{{AVG_SLA}} min</strong></div>
-                <div><span>Mediana</span><strong>{{MEDIAN_SLA}} min</strong></div>
-                <div><span>P90</span><strong>{{P90_SLA}} min</strong></div>
-                <div><span>Cobertura</span><strong>{{COVERAGE}}%</strong></div>
+    <section class="section-block">
+        <div class="section-heading">
+            <div>
+                <span class="section-kicker">01 · Indicadores</span>
+                <h2>KPIs de campaña y operación</h2>
             </div>
-            <p class="note">La diferencia entre promedio y mediana indica una distribución sesgada por conversaciones con esperas excepcionalmente largas.</p>
-        </article>
-    </section>
+            <span class="requirement-badge">Requerido + complementario</span>
+        </div>
 
-    <section class="card">
-        <header><div><span class="eyebrow">Workforce management</span><h2>Volumen incoming por hora</h2></div><p>Distribución horaria para identificar franjas de mayor demanda.</p></header>
-        <div class="hour-chart">{{HOURLY}}</div>
-    </section>
+        <div class="kpi-grid">
+            <article class="kpi-card">
+                <span class="kpi-label">Mensajes salientes</span>
+                <strong>{{OUTGOING}}</strong>
+                <small>Volumen outgoing filtrado</small>
+            </article>
+            <article class="kpi-card danger">
+                <span class="kpi-label">Tasa de fallos</span>
+                <strong>{{FAILED_PCT}}%</strong>
+                <small>{{FAILED_MESSAGES}} mensajes failed</small>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-label">Tasa de lectura</span>
+                <strong>{{READ_PCT}}%</strong>
+                <small>Mensajes read</small>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-label">Tasa delivered</span>
+                <strong>{{DELIVERED_PCT}}%</strong>
+                <small>Entrega sin lectura</small>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-label">SLA promedio</span>
+                <strong>{{AVG_SLA}} min</strong>
+                <small>Sensible a valores extremos</small>
+            </article>
+            <article class="kpi-card success">
+                <span class="kpi-label">SLA mediana</span>
+                <strong>{{MEDIAN_SLA}} min</strong>
+                <small>Valor central de respuesta</small>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-label">SLA P90</span>
+                <strong>{{P90_SLA}} min</strong>
+                <small>90% responde antes de este umbral</small>
+            </article>
+            <article class="kpi-card">
+                <span class="kpi-label">Cobertura SLA</span>
+                <strong>{{COVERAGE}}%</strong>
+                <small>{{UNANSWERED}} incoming sin acción posterior</small>
+            </article>
+        </div>
 
-    <section class="two-columns">
-        <article class="card">
-            <header><div><span class="eyebrow">Calidad técnica</span><h2>Principales errores de entrega</h2></div><p>Concentración de los motivos registrados en mensajes failed.</p></header>
-            {{ERRORS}}
-        </article>
-        <article class="card">
-            <header><div><span class="eyebrow">Campaña</span><h2>Plantillas con fallos</h2></div><p>Fallos agrupados por plantilla identificada en los atributos del mensaje.</p></header>
-            {{TEMPLATES}}
-        </article>
-    </section>
-
-    <section class="card">
-        <header><div><span class="eyebrow">NLP ligero</span><h2>Clasificación de mensajes entrantes</h2></div><p>Categorización explicable por palabras clave: Pedido, Queja, Soporte y Otros.</p></header>
-        {{CATEGORIES}}
-    </section>
-
-    <section class="finding">
-        <div class="finding-icon">!</div>
-        <div>
-            <span>Hallazgo principal</span>
-            <h2>La falla está altamente concentrada y es accionable.</h2>
-            <p>El error más frecuente concentra aproximadamente <strong>{{TOP_ERROR_PCT}}%</strong> de los fallos. La plantilla <strong>{{TOP_TEMPLATE}}</strong> concentra aproximadamente <strong>{{TOP_TEMPLATE_PCT}}%</strong> de los mensajes failed. Antes del próximo envío, la acción prioritaria es validar la correspondencia entre parámetros enviados y parámetros definidos en la plantilla.</p>
+        <div class="query-pair">
+            {{QUERY_KPIS}}
+            {{QUERY_SLA}}
         </div>
     </section>
 
-    <section class="methodology">
-        <div><strong>ETL</strong><span>Python + Pandas</span></div>
-        <div><strong>Persistencia</strong><span>PostgreSQL 16</span></div>
-        <div><strong>SQL</strong><span>CTEs + Window Functions</span></div>
-        <div><strong>Visualización</strong><span>Python estándar + HTML/CSS</span></div>
-        <div><strong>Pruebas</strong><span>Pytest</span></div>
+    <section class="section-block">
+        <div class="section-heading">
+            <div>
+                <span class="section-kicker">02 · Insights SQL requeridos</span>
+                <h2>Entrega, SLA y demanda horaria</h2>
+            </div>
+            <span class="requirement-badge required">Núcleo del caso técnico</span>
+        </div>
+
+        <div class="dashboard-grid two-col">
+            <article class="analytics-card">
+                <header class="card-header">
+                    <div>
+                        <span class="card-tag">Funnel de entrega</span>
+                        <h3>Distribución de estados outgoing</h3>
+                    </div>
+                    <span class="metric-chip">CTE</span>
+                </header>
+                <p class="card-description">
+                    Participación de cada estado sobre los mensajes salientes dentro del periodo filtrado.
+                </p>
+                <div class="chart-space compact">{{FUNNEL}}</div>
+                {{QUERY_FUNNEL}}
+            </article>
+
+            <article class="analytics-card">
+                <header class="card-header">
+                    <div>
+                        <span class="card-tag">SLA operativo</span>
+                        <h3>Promedio vs. distribución</h3>
+                    </div>
+                    <span class="metric-chip">Window Function</span>
+                </header>
+                <p class="card-description">
+                    La diferencia entre promedio y mediana revela esperas largas que distorsionan el promedio.
+                </p>
+                <div class="sla-grid">
+                    <div><span>Promedio</span><strong>{{AVG_SLA}} min</strong></div>
+                    <div><span>Mediana</span><strong>{{MEDIAN_SLA}} min</strong></div>
+                    <div><span>P90</span><strong>{{P90_SLA}} min</strong></div>
+                    <div><span>Cobertura</span><strong>{{COVERAGE}}%</strong></div>
+                </div>
+                {{QUERY_SLA}}
+            </article>
+        </div>
+
+        <article class="analytics-card full-width">
+            <header class="card-header">
+                <div>
+                    <span class="card-tag">Curva de calor horaria</span>
+                    <h3>Volumen de mensajes incoming por hora</h3>
+                </div>
+                <span class="metric-chip">Workforce Management</span>
+            </header>
+            <p class="card-description">
+                Distribución de demanda para identificar franjas donde conviene reforzar la capacidad operativa.
+            </p>
+            <div class="hour-chart">{{HOURLY}}</div>
+            {{QUERY_HOURLY}}
+        </article>
     </section>
 
-    <footer>Caso LikeU</footer>
+    <section class="section-block">
+        <div class="section-heading">
+            <div>
+                <span class="section-kicker">03 · Diagnóstico de negocio</span>
+                <h2>Origen de fallos y comportamiento del cliente</h2>
+            </div>
+            <span class="requirement-badge">Análisis complementario</span>
+        </div>
+
+        <div class="dashboard-grid two-col">
+            <article class="analytics-card">
+                <header class="card-header">
+                    <div>
+                        <span class="card-tag">Calidad técnica</span>
+                        <h3>Principales errores de entrega</h3>
+                    </div>
+                    <span class="metric-chip">Failed</span>
+                </header>
+                <p class="card-description">
+                    Agrupación del <code>external_error</code> extraído de los atributos JSON.
+                </p>
+                <div class="chart-space">{{ERRORS}}</div>
+                {{QUERY_ERRORS}}
+            </article>
+
+            <article class="analytics-card">
+                <header class="card-header">
+                    <div>
+                        <span class="card-tag">Plantillas</span>
+                        <h3>Concentración de fallos por plantilla</h3>
+                    </div>
+                    <span class="metric-chip">JSON parsing</span>
+                </header>
+                <p class="card-description">
+                    Identifica qué plantilla concentra la mayor cantidad de mensajes fallidos.
+                </p>
+                <div class="chart-space">{{TEMPLATES}}</div>
+                {{QUERY_TEMPLATES}}
+            </article>
+        </div>
+
+        <article class="analytics-card full-width">
+            <header class="card-header">
+                <div>
+                    <span class="card-tag">NLP ligero</span>
+                    <h3>Clasificación de mensajes incoming</h3>
+                </div>
+                <span class="metric-chip">Keywords</span>
+            </header>
+            <p class="card-description">
+                Clasificación explicable mediante palabras clave para aproximar Pedido, Queja, Soporte y Otros.
+            </p>
+            <div class="category-layout">
+                <div class="chart-space">{{CATEGORIES}}</div>
+                <div class="nlp-note">
+                    <span class="note-label">Criterio</span>
+                    <strong>Clasificación determinística y auditable</strong>
+                    <p>
+                        Se priorizan reglas explícitas y reproducibles sobre modelos complejos,
+                        acorde con el alcance junior y el requerimiento de NLP ligero.
+                    </p>
+                </div>
+            </div>
+            {{QUERY_CATEGORIES}}
+        </article>
+    </section>
+
+    <section class="executive-finding">
+        <div class="finding-mark">!</div>
+        <div>
+            <span class="section-kicker warning">Hallazgo principal</span>
+            <h2>La falla está altamente concentrada y tiene una acción técnica concreta.</h2>
+            <p>
+                El error más frecuente concentra aproximadamente <strong>{{TOP_ERROR_PCT}}%</strong> de los fallos
+                y corresponde a <strong>{{TOP_ERROR}}</strong>. La plantilla
+                <strong>{{TOP_TEMPLATE}}</strong> concentra aproximadamente <strong>{{TOP_TEMPLATE_PCT}}%</strong>.
+                La acción prioritaria antes del siguiente envío es validar la correspondencia entre parámetros
+                enviados y parámetros definidos en la plantilla.
+            </p>
+        </div>
+    </section>
+
+    <footer>
+        <div><strong>Caso LikeU</strong>
+    </footer>
 </main>
 </body>
 </html>

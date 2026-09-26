@@ -15,6 +15,7 @@ from dashboard.queries import (
     get_hourly,
     get_kpis,
     get_templates,
+    get_query_support,
 )
 from dashboard.render import render_dashboard
 
@@ -89,6 +90,7 @@ class DashboardHandler(BaseHTTPRequestHandler):
                 templates=get_templates(date_from, date_to),
                 categories=get_categories(date_from, date_to),
                 summary=get_dataset_summary(),
+                query_support=get_query_support(date_from, date_to, status or None),
                 date_from=date_from,
                 date_to=date_to,
                 status=status,

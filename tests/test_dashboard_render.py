@@ -27,6 +27,15 @@ def test_dashboard_render_contains_main_metrics():
         templates=[{"label": "lanzamiento_", "total": 1352, "percentage": 96.85}],
         categories=[{"label": "Otros", "total": 100, "percentage": 23.26}],
         summary={"records": 3687, "conversations": 2153, "min_date": "2023-07-25", "max_date": "2023-08-02"},
+        query_support={
+            "kpis": {"sql": "SELECT 1;", "params": []},
+            "sla": {"sql": "SELECT 2;", "params": []},
+            "funnel": {"sql": "SELECT 3;", "params": []},
+            "hourly": {"sql": "SELECT 4;", "params": []},
+            "errors": {"sql": "SELECT 5;", "params": []},
+            "templates": {"sql": "SELECT 6;", "params": []},
+            "categories": {"sql": "SELECT 7;", "params": []},
+        },
         date_from="2023-07-25",
         date_to="2023-08-02",
         status="",
@@ -34,3 +43,5 @@ def test_dashboard_render_contains_main_metrics():
     assert "LikeU Analytics" in html
     assert "55.68%" in html
     assert "lanzamiento_" in html
+    assert "Consulta de apoyo" in html
+    assert "SELECT 3;" in html

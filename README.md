@@ -91,6 +91,8 @@ Abrir:
 http://localhost:8000
 ```
 
+El tablero presenta una interfaz ejecutiva organizada por requisitos y **cada visualización incluye un bloque desplegable con la consulta SQL real que la alimenta y los parámetros activos**. Esto permite demostrar trazabilidad entre el gráfico y el cálculo ejecutado en PostgreSQL.
+
 El tablero incluye:
 
 - Filtros por fecha inicio, fecha fin y estado.
@@ -104,8 +106,13 @@ El tablero incluye:
 - Plantillas con mayor concentración de fallos.
 - Clasificación NLP de incoming.
 - Hallazgo ejecutivo generado con las métricas filtradas.
+- Consulta SQL de apoyo visible para KPIs, SLA, funnel, curva horaria, errores, plantillas y categorías.
 
 El servidor web usa `http.server.ThreadingHTTPServer` de la librería estándar de Python. No utiliza Django, Flask, Streamlit, Metabase, Bootstrap ni frameworks JavaScript.
+
+## Trazabilidad de requisitos
+
+La correspondencia entre el enunciado, el código y la evidencia se documenta en `docs/matriz_requisitos.md`.
 
 ## Consultas del caso
 

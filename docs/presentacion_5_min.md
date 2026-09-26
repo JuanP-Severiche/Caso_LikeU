@@ -22,7 +22,7 @@ La curva horaria muestra el volumen de incoming por hora para apoyar decisiones 
 
 ## 3:35 - 4:20 | Dashboard
 
-El tablero incluye KPIs, funnel de estados, SLA, volumen horario, errores principales, plantillas con fallos y clasificación de contactos. Los filtros mínimos son fecha y estado; se pueden agregar plantilla y categoría.
+El tablero incluye KPIs, funnel de estados, SLA, volumen horario, errores principales, plantillas con fallos y clasificación de contactos. Los filtros mínimos son fecha y estado. Además, cada visualización permite desplegar la consulta SQL real que la alimenta y los parámetros activos, lo que facilita explicar y auditar de dónde sale cada indicador.
 
 ## 4:20 - 5:00 | Escalabilidad
 
