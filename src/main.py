@@ -3,6 +3,8 @@ from __future__ import annotations
 import logging
 import sys
 
+import pandas as pd
+
 from src.config import settings
 from src.extract import read_raw_messages
 from src.load import load_messages
@@ -31,9 +33,17 @@ def run() -> int:
         clean = clean_messages(raw)
         logger.info("Registros útiles después de limpieza: %s", len(clean))
         logger.info("Columnas finales: %s", len(clean.columns))
+        logger.info(
+            "Textos con encoding reparado: %s",
+            int(clean.get("encoding_repaired", pd.Series(dtype=bool)).fillna(False).astype(bool).sum()),
+        )
+        logger.info(
+            "Textos con posible pérdida en origen: %s",
+            int(clean.get("text_quality_status", pd.Series(dtype=str)).eq("SOURCE_CHARACTER_LOSS").sum()),
+        )
 
         settings.processed_file.parent.mkdir(parents=True, exist_ok=True)
-        clean.to_csv(settings.processed_file, index=False, encoding="utf-8")
+        clean.to_csv(settings.processed_file, index=False, encoding="utf-8-sig")
         logger.info("CSV procesado guardado en: %s", settings.processed_file)
 
         load_messages(clean, settings.database_url)

@@ -18,3 +18,7 @@
 | `content_is_empty` | Indicador de contenido vacío. |
 
 Los identificadores del archivo fuente aparecen con puntos usados como separadores de miles. El ETL los normaliza a enteros (`31.888` → `31888`).
+
+| `clean_message` | Mensaje normalizado para análisis; conserva semántica, tildes, ñ y emojis. |
+| `encoding_repaired` | `true` si el ETL corrigió mojibake recuperable. |
+| `text_quality_status` | `OK`, `ENCODING_REPAIRED` o `SOURCE_CHARACTER_LOSS`. |

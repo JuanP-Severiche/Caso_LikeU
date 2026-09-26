@@ -111,6 +111,12 @@ Debe aparecer:
 messages_clean.csv
 ```
 
+## Calidad y normalización del mensaje
+
+El ETL conserva la columna `content` como dato fuente y genera `clean_message` como versión preparada para análisis. Esta columna normaliza Unicode en NFC, corrige de forma conservadora mojibake recuperable (por ejemplo `conversaciÃ³n` → `conversación`), conserva tildes, `ñ`, emojis y signos, y reemplaza el marcador `¶` por espacios. El CSV se exporta como `utf-8-sig` para compatibilidad con Excel/Windows.
+
+Además se agregan `encoding_repaired` y `text_quality_status`. Si la fuente ya contiene pérdida irreversible como `Nu?Ez`, el proceso no inventa caracteres: conserva el texto y lo marca como `SOURCE_CHARACTER_LOSS`.
+
 ## Dashboard
 
 Abrir:

@@ -1124,3 +1124,46 @@ footer {
     .etl-action-buttons { flex-direction: column; }
     .etl-action-buttons button { width: 100%; }
 }
+
+
+.text-quality-summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+    margin: 12px 0;
+}
+.text-quality-summary > div {
+    padding: 10px 11px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface-2);
+    min-width: 0;
+}
+.text-quality-summary span,
+.text-quality-summary strong {
+    display: block;
+}
+.text-quality-summary span {
+    color: var(--muted-2);
+    font-size: 9px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+}
+.text-quality-summary strong {
+    margin-top: 4px;
+    font-size: 13px;
+}
+.quality-note {
+    margin: 10px 0 14px;
+    padding: 10px 12px;
+    border-left: 3px solid var(--primary-2);
+    border-radius: 8px;
+    background: var(--primary-soft);
+    color: var(--muted);
+    font-size: 10.5px;
+    line-height: 1.55;
+}
+@media (max-width: 720px) {
+    .text-quality-summary { grid-template-columns: repeat(2, 1fr); }
+}

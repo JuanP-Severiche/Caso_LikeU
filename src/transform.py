@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+import unicodedata
 from typing import Any
 
 import pandas as pd
@@ -24,6 +25,95 @@ ID_COLUMNS = {
 }
 
 DATE_COLUMNS = ("created_at", "updated_at")
+
+
+MOJIBAKE_MARKERS = (
+    "Ã",
+    "Â",
+    "â€",
+    "â€™",
+    "â€œ",
+    "â€",
+    "ðŸ",
+    "ï¿½",
+    "�",
+)
+
+
+def _suspicious_text_score(text: str) -> int:
+    """Puntúa señales típicas de UTF-8 interpretado como Latin-1/Windows-1252."""
+    return sum(text.count(marker) for marker in MOJIBAKE_MARKERS)
+
+
+def repair_mojibake(value: object) -> tuple[str, bool]:
+    """
+    Corrige mojibake recuperable sin recodificar toda la cadena.
+
+    Se reparan secuencias conocidas producidas cuando caracteres UTF-8 en español
+    fueron interpretados como Latin-1/Windows-1252. La estrategia por reemplazo
+    puntual evita dañar caracteres que ya estén correctos dentro del mismo mensaje.
+    """
+    text = "" if value is None else unicodedata.normalize("NFC", str(value))
+    if not text:
+        return text, False
+
+    # Mapa generado a partir de caracteres relevantes para español.
+    intended_chars = "áéíóúÁÉÍÓÚñÑüÜ¿¡"
+    replacements = {
+        char.encode("utf-8").decode("latin-1"): char
+        for char in intended_chars
+    }
+
+    # Secuencias frecuentes adicionales de Windows-1252/UTF-8.
+    replacements.update({
+        "Â ": " ",
+        "Â¿": "¿",
+        "Â¡": "¡",
+        "â€™": "’",
+        "â€œ": "“",
+        "â€": "”",
+        "â€“": "–",
+        "â€”": "—",
+        "â€¦": "…",
+    })
+
+    repaired = text
+    for bad, good in replacements.items():
+        repaired = repaired.replace(bad, good)
+
+    repaired = unicodedata.normalize("NFC", repaired)
+    return repaired, repaired != text
+
+
+def normalize_message_text(value: object) -> tuple[str, bool, str]:
+    """
+    Genera el mensaje limpio sin destruir el dato fuente.
+
+    - normaliza Unicode a NFC;
+    - repara mojibake recuperable (ej. conversaciÃ³n -> conversación);
+    - convierte el marcador ¶ en espacios;
+    - compacta espacios y saltos de línea;
+    - conserva signos, tildes, ñ, emojis y contenido semántico;
+    - marca pérdidas ya presentes en la fuente como Nu?Ez sin inventar caracteres.
+    """
+    repaired, was_repaired = repair_mojibake(value)
+    cleaned = repaired.replace("¶", " ")
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    cleaned = unicodedata.normalize("NFC", cleaned)
+
+    # Señal conservadora de carácter ya perdido en origen: letra ? letra.
+    unrecoverable = bool(
+        re.search(r"(?<=[A-Za-zÁÉÍÓÚÜÑáéíóúüñ])\?(?=[A-Za-zÁÉÍÓÚÜÑáéíóúüñ])", cleaned)
+    )
+
+    if unrecoverable:
+        quality = "SOURCE_CHARACTER_LOSS"
+    elif was_repaired:
+        quality = "ENCODING_REPAIRED"
+    else:
+        quality = "OK"
+
+    return cleaned, was_repaired, quality
 
 
 def _clean_cell(value: object) -> str:
@@ -142,8 +232,17 @@ def clean_messages(frame: pd.DataFrame) -> pd.DataFrame:
     data["template_name"] = data.apply(_extract_template_name, axis=1)
     data["json_parse_status"] = data.apply(_json_parse_status, axis=1)
 
+    # Se conserva content como dato fuente y se crea una versión limpia para consumo analítico.
+    normalized_content = data.get("content", pd.Series(index=data.index, dtype=str)).map(normalize_message_text)
+    normalized_frame = pd.DataFrame(
+        normalized_content.tolist(),
+        columns=["clean_message", "encoding_repaired", "text_quality_status"],
+        index=data.index,
+    )
+    data[["clean_message", "encoding_repaired", "text_quality_status"]] = normalized_frame
+
     classified = data.apply(
-        lambda row: classify_incoming_message(row.get("message_type", ""), row.get("content", "")),
+        lambda row: classify_incoming_message(row.get("message_type", ""), row.get("clean_message", "")),
         axis=1,
         result_type="expand",
     )

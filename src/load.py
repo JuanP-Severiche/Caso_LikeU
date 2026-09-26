@@ -16,6 +16,10 @@ def load_messages(frame: pd.DataFrame, database_url: str) -> None:
     engine = build_engine(database_url)
 
     with engine.begin() as connection:
+        # Compatibilidad con volúmenes PostgreSQL ya creados antes de agregar calidad de texto.
+        connection.execute(text("ALTER TABLE messages ADD COLUMN IF NOT EXISTS clean_message TEXT"))
+        connection.execute(text("ALTER TABLE messages ADD COLUMN IF NOT EXISTS encoding_repaired BOOLEAN NOT NULL DEFAULT FALSE"))
+        connection.execute(text("ALTER TABLE messages ADD COLUMN IF NOT EXISTS text_quality_status VARCHAR(40)"))
         connection.execute(text("TRUNCATE TABLE messages RESTART IDENTITY"))
 
     frame.to_sql(

@@ -12,7 +12,7 @@ import pandas as pd
 from src.classifier import classify_incoming_message
 from src.extract import read_raw_messages
 from src.load import load_messages
-from src.transform import clean_messages, parse_embedded_json
+from src.transform import clean_messages, normalize_message_text, parse_embedded_json, repair_mojibake
 
 
 RAW_FILE = Path(os.getenv("RAW_FILE", "data/raw/prueba.txt"))
@@ -31,14 +31,15 @@ RAW_PREVIEW_COLUMNS = [
 
 PROCESSED_PREVIEW_COLUMNS = [
     "id",
-    "conversation_id",
     "message_type",
-    "created_at",
     "status",
+    "content",
+    "clean_message",
+    "encoding_repaired",
+    "text_quality_status",
     "external_error",
     "template_name",
     "incoming_category",
-    "matched_keyword",
 ]
 
 
@@ -121,18 +122,42 @@ def preview_raw(limit: int = 6) -> dict[str, Any]:
 def preview_processed(limit: int = 8) -> dict[str, Any]:
     if not PROCESSED_FILE.exists():
         return {"columns": [], "rows": []}
-    frame = pd.read_csv(PROCESSED_FILE, nrows=limit, keep_default_na=False)
+    frame = pd.read_csv(PROCESSED_FILE, nrows=limit, keep_default_na=False, encoding="utf-8-sig")
     return _frame_payload(frame, PROCESSED_PREVIEW_COLUMNS)
 
 
 def count_data_rows(path: Path, subtract_header: bool = True) -> int | None:
     if not path.exists():
         return None
-    with path.open("r", encoding="utf-8", errors="replace") as handle:
+    with path.open("r", encoding="utf-8-sig", errors="replace") as handle:
         count = sum(1 for _ in handle)
     if subtract_header and count:
         count -= 1
     return max(count, 0)
+
+
+
+def processed_text_quality() -> dict[str, int]:
+    if not PROCESSED_FILE.exists():
+        return {"records": 0, "encoding_repaired": 0, "source_character_loss": 0, "ok": 0}
+
+    frame = pd.read_csv(
+        PROCESSED_FILE,
+        usecols=lambda column: column in {"encoding_repaired", "text_quality_status"},
+        keep_default_na=False,
+        encoding="utf-8-sig",
+    )
+    if frame.empty:
+        return {"records": 0, "encoding_repaired": 0, "source_character_loss": 0, "ok": 0}
+
+    repaired = frame.get("encoding_repaired", pd.Series(dtype=str)).astype(str).str.lower().eq("true").sum()
+    status = frame.get("text_quality_status", pd.Series(dtype=str)).astype(str)
+    return {
+        "records": int(len(frame)),
+        "encoding_repaired": int(repaired),
+        "source_character_loss": int(status.eq("SOURCE_CHARACTER_LOSS").sum()),
+        "ok": int(status.eq("OK").sum()),
+    }
 
 
 def source_code_support() -> list[dict[str, str]]:
@@ -152,22 +177,33 @@ def source_code_support() -> list[dict[str, str]]:
             "code": inspect.getsource(clean_messages).strip(),
         },
         {
+            "id": "text-quality",
+            "title": "3. Normalización del mensaje",
+            "description": "Conserva content original y crea clean_message con Unicode NFC, reparación conservadora de mojibake y bandera de calidad.",
+            "language": "python",
+            "code": (
+                inspect.getsource(repair_mojibake).strip()
+                + "\n\n"
+                + inspect.getsource(normalize_message_text).strip()
+            ),
+        },
+        {
             "id": "json",
-            "title": "3. Parsing del JSON embebido",
+            "title": "4. Parsing del JSON embebido",
             "description": "Tolera el JSON escapado y lo convierte a estructuras Python para extraer errores y plantillas.",
             "language": "python",
             "code": inspect.getsource(parse_embedded_json).strip(),
         },
         {
             "id": "nlp",
-            "title": "4. NLP ligero por palabras clave",
+            "title": "5. NLP ligero por palabras clave",
             "description": "Clasifica incoming con reglas explícitas y auditables, sin modelos externos.",
             "language": "python",
             "code": inspect.getsource(classify_incoming_message).strip(),
         },
         {
             "id": "load",
-            "title": "5. Persistencia en PostgreSQL",
+            "title": "6. Persistencia en PostgreSQL",
             "description": "Carga el DataFrame limpio por lotes y actualiza estadísticas para el optimizador.",
             "language": "python",
             "code": inspect.getsource(load_messages).strip(),
@@ -187,14 +223,16 @@ def get_etl_trace() -> dict[str, Any]:
         "processed": processed_meta,
         "raw_preview": preview_raw(),
         "processed_preview": preview_processed(),
+        "text_quality": processed_text_quality(),
         "steps": [
             {"number": 1, "label": "TXT crudo", "detail": "Archivo fuente delimitado por |"},
-            {"number": 2, "label": "Limpieza", "detail": "Espacios, columnas vacías, separador, IDs y fechas"},
-            {"number": 3, "label": "JSON", "detail": "external_error y template_name"},
-            {"number": 4, "label": "NLP ligero", "detail": "Pedido, Queja, Soporte u Otros"},
-            {"number": 5, "label": "CSV limpio", "detail": "messages_clean.csv con 28 columnas"},
-            {"number": 6, "label": "PostgreSQL", "detail": "Tabla messages + vistas + índices"},
-            {"number": 7, "label": "Dashboard", "detail": "SQL parametrizado y visualización interactiva"},
+            {"number": 2, "label": "Limpieza", "detail": "Estructura, IDs, fechas, espacios y columnas vacías"},
+            {"number": 3, "label": "Texto", "detail": "Unicode NFC + reparación conservadora de mojibake"},
+            {"number": 4, "label": "JSON", "detail": "external_error y template_name"},
+            {"number": 5, "label": "NLP ligero", "detail": "Pedido, Queja, Soporte u Otros"},
+            {"number": 6, "label": "CSV limpio", "detail": "UTF-8 con BOM + clean_message + banderas de calidad"},
+            {"number": 7, "label": "PostgreSQL", "detail": "Tabla messages + vistas + índices"},
+            {"number": 8, "label": "Dashboard", "detail": "SQL parametrizado y visualización interactiva"},
         ],
         "code_support": source_code_support(),
     }

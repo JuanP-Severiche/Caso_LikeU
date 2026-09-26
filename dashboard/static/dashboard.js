@@ -329,6 +329,13 @@
         renderFileMeta(document.querySelector('#processed-file-meta'), payload.processed, payload.database || null);
         renderPreviewTable(document.querySelector('#raw-preview-table'), payload.raw_preview);
         renderPreviewTable(document.querySelector('#processed-preview-table'), payload.processed_preview);
+        const quality = payload.text_quality || {};
+        const repaired = document.querySelector('#quality-repaired');
+        const loss = document.querySelector('#quality-loss');
+        const ok = document.querySelector('#quality-ok');
+        if (repaired) repaired.textContent = Number(quality.encoding_repaired || 0).toLocaleString('es-CO');
+        if (loss) loss.textContent = Number(quality.source_character_loss || 0).toLocaleString('es-CO');
+        if (ok) ok.textContent = Number(quality.ok || 0).toLocaleString('es-CO');
         renderCodeSupport(payload.code_support || []);
     };
 

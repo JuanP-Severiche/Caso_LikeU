@@ -27,6 +27,9 @@ CREATE TABLE IF NOT EXISTS messages (
     incoming_category VARCHAR(50),
     matched_keyword VARCHAR(100),
     content_is_empty BOOLEAN NOT NULL DEFAULT FALSE,
+    clean_message TEXT,
+    encoding_repaired BOOLEAN NOT NULL DEFAULT FALSE,
+    text_quality_status VARCHAR(40),
     CONSTRAINT chk_message_type
         CHECK (message_type IN ('incoming', 'outgoing', 'activity'))
 );
