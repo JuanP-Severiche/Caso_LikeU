@@ -68,7 +68,7 @@ Failed: 1396
 Las pruebas deben finalizar con:
 
 ```text
-11 passed
+14 passed
 ```
 
 Verificación de PostgreSQL:
