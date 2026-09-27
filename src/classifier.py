@@ -1,3 +1,5 @@
+"""Clasificacion basica de mensajes entrantes mediante palabras clave."""
+
 from __future__ import annotations
 
 import re
@@ -48,6 +50,7 @@ CATEGORY_KEYWORDS: dict[str, tuple[str, ...]] = {
 
 
 def normalize_text(value: object) -> str:
+    """Normaliza texto para comparar palabras sin depender de mayusculas o tildes."""
     text = "" if value is None else str(value)
     text = unicodedata.normalize("NFKD", text)
     text = "".join(char for char in text if not unicodedata.combining(char))
@@ -65,6 +68,7 @@ def _first_match(text: str, keywords: Iterable[str]) -> str | None:
 
 
 def classify_incoming_message(message_type: str, content: str) -> tuple[str | None, str | None]:
+    """Clasifica solo mensajes incoming y devuelve categoria y palabra encontrada."""
     if str(message_type).strip().lower() != "incoming":
         return None, None
 
@@ -72,7 +76,7 @@ def classify_incoming_message(message_type: str, content: str) -> tuple[str | No
     if not normalized:
         return "Otros", None
 
-    # Queja has priority because it often also contains words such as "pedido" or "factura".
+    # Queja tiene prioridad porque puede incluir tambien palabras asociadas a pedidos.
     for category in ("Queja", "Pedido", "Soporte"):
         keyword = _first_match(normalized, CATEGORY_KEYWORDS[category])
         if keyword:

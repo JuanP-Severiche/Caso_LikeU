@@ -1,3 +1,5 @@
+"""Punto de entrada del proceso ETL."""
+
 from __future__ import annotations
 
 import logging
@@ -12,6 +14,7 @@ from src.transform import clean_messages
 
 
 def configure_logging() -> None:
+    """Configura un formato de log simple para CLI y Docker."""
     logging.basicConfig(
         level=getattr(logging, settings.log_level, logging.INFO),
         format="%(asctime)s | %(levelname)s | %(message)s",
@@ -20,6 +23,7 @@ def configure_logging() -> None:
 
 
 def run() -> int:
+    """Ejecuta extraccion, transformacion, exportacion CSV y carga a PostgreSQL."""
     configure_logging()
     logger = logging.getLogger("likeu-etl")
 

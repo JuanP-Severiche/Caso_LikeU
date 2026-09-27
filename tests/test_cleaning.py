@@ -36,7 +36,7 @@ def test_clean_messages_removes_separator_row() -> None:
 
 
 def test_repair_mojibake_restores_utf8_text_without_touching_valid_spanish() -> None:
-    repaired, changed = repair_mojibake("La conversaciÃ³n fue marcada")
+    repaired, changed = repair_mojibake("La conversaci\u00c3\u00b3n fue marcada")
     assert repaired == "La conversación fue marcada"
     assert changed is True
 
@@ -46,7 +46,7 @@ def test_repair_mojibake_restores_utf8_text_without_touching_valid_spanish() -> 
 
 
 def test_clean_message_preserves_semantics_and_flags_source_loss() -> None:
-    cleaned, repaired, quality = normalize_message_text("Hola¶La conversaciÃ³n continúa")
+    cleaned, repaired, quality = normalize_message_text("Hola\u00b6La conversaci\u00c3\u00b3n continúa")
     assert cleaned == "Hola La conversación continúa"
     assert repaired is True
     assert quality == "ENCODING_REPAIRED"
@@ -61,7 +61,7 @@ def test_clean_messages_keeps_original_content_and_adds_clean_message() -> None:
     frame = pd.DataFrame(
         {
             "id": ["31.888"],
-            "content": [" La conversaciÃ³n fue marcada¶por Rojas bpo "],
+            "content": [" La conversaci\u00c3\u00b3n fue marcada\u00b6por Rojas bpo "],
             "conversation_id": ["2.460"],
             "message_type": ["activity"],
             "created_at": ["2023-07-28 14:27:58.000"],
@@ -75,7 +75,7 @@ def test_clean_messages_keeps_original_content_and_adds_clean_message() -> None:
 
     result = clean_messages(frame)
 
-    assert result.iloc[0]["content"] == "La conversaciÃ³n fue marcada¶por Rojas bpo"
+    assert result.iloc[0]["content"] == "La conversaci\u00c3\u00b3n fue marcada\u00b6por Rojas bpo"
     assert result.iloc[0]["clean_message"] == "La conversación fue marcada por Rojas bpo"
     assert bool(result.iloc[0]["encoding_repaired"]) is True
     assert result.iloc[0]["text_quality_status"] == "ENCODING_REPAIRED"

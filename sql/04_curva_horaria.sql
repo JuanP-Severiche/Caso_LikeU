@@ -1,4 +1,5 @@
--- Volumen de mensajes incoming por hora del día.
+-- Punto 2. Curva de calor horaria.
+-- Cuenta mensajes incoming por hora y conserva las 24 franjas del día.
 WITH hours AS (
     SELECT generate_series(0, 23) AS hour_of_day
 ),

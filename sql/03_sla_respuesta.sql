@@ -1,5 +1,5 @@
--- SLA solicitado por el caso técnico:
--- desde cada incoming hasta la siguiente acción activity u outgoing
+-- Punto 2. SLA de respuesta operativa.
+-- Mide desde cada incoming hasta la siguiente acción activity u outgoing
 -- dentro de la misma conversation_id.
 WITH ordered_events AS (
     SELECT
@@ -32,8 +32,12 @@ SELECT
     COUNT(*) - COUNT(next_action_at) AS unanswered_messages,
     ROUND(100.0 * COUNT(next_action_at) / NULLIF(COUNT(*), 0), 2) AS coverage_pct,
     ROUND(AVG(response_minutes)::numeric, 2) AS avg_response_minutes,
-    ROUND(PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY response_minutes)::numeric, 2)
-        AS median_response_minutes,
-    ROUND(PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY response_minutes)::numeric, 2)
-        AS p90_response_minutes
+    ROUND(
+        PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY response_minutes)::numeric,
+        2
+    ) AS median_response_minutes,
+    ROUND(
+        PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY response_minutes)::numeric,
+        2
+    ) AS p90_response_minutes
 FROM incoming_sla;

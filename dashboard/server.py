@@ -1,3 +1,5 @@
+"""Servidor HTTP ligero y endpoints del dashboard."""
+
 from __future__ import annotations
 
 import json
@@ -44,6 +46,7 @@ ALLOW_ETL_RUN = os.getenv("DASHBOARD_ALLOW_ETL_RUN", "true").lower() == "true"
 
 
 def valid_date(value: str) -> bool:
+    """Valida fechas ISO antes de usarlas como filtros."""
     try:
         date.fromisoformat(value)
         return True
@@ -52,6 +55,7 @@ def valid_date(value: str) -> bool:
 
 
 def normalize_filters(params: dict[str, list[str]]) -> tuple[str, str, str]:
+    """Normaliza fechas y limita status a la lista permitida."""
     date_from = params.get("date_from", [DEFAULT_DATE_FROM])[0]
     date_to = params.get("date_to", [DEFAULT_DATE_TO])[0]
     status = params.get("status", [""])[0].strip().lower()
@@ -69,7 +73,7 @@ def normalize_filters(params: dict[str, list[str]]) -> tuple[str, str, str]:
 
 
 def execute_metric(name: str, date_from: str, date_to: str, status: str):
-    """Ejecuta una métrica del dashboard y retorna datos + SQL de trazabilidad."""
+    """Ejecuta una metrica permitida y devuelve datos, filtros y SQL de apoyo."""
     started = time.perf_counter()
 
     if name == "kpis":
@@ -106,7 +110,7 @@ def execute_metric(name: str, date_from: str, date_to: str, status: str):
 
 
 def run_etl_process() -> dict:
-    """Ejecuta el mismo ETL de la CLI con un comando fijo y retorna sus logs."""
+    """Ejecuta el ETL con un comando fijo y devuelve el resultado de la ejecucion."""
     if not ETL_LOCK.acquire(blocking=False):
         return {
             "ok": False,

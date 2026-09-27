@@ -5,7 +5,4 @@ __pycache__/
 *.py[cod]
 .pytest_cache/
 *.log
-data/processed/*
-!data/processed/.gitkeep
 .DS_Store
-Thumbs.db

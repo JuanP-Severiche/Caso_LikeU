@@ -1,3 +1,5 @@
+"""Configuracion central del ETL obtenida desde variables de entorno."""
+
 from __future__ import annotations
 
 import os
@@ -12,6 +14,7 @@ load_dotenv()
 
 @dataclass(frozen=True)
 class Settings:
+    """Rutas, conexion y nivel de log configurables por entorno."""
     raw_file: Path = Path(os.getenv("RAW_FILE", "data/raw/prueba.txt"))
     processed_file: Path = Path(
         os.getenv("PROCESSED_FILE", "data/processed/messages_clean.csv")

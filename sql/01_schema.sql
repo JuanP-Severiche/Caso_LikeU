@@ -1,3 +1,4 @@
+-- Esquema base del proyecto. Define la tabla de mensajes y sus tipos principales.
 CREATE TABLE IF NOT EXISTS messages (
     id BIGINT PRIMARY KEY,
     content TEXT,

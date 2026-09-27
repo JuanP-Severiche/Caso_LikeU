@@ -1,3 +1,4 @@
+-- Indices sobre columnas usadas en filtros, joins y ordenamiento temporal.
 -- Índices orientados a los filtros y cálculos utilizados por el dashboard.
 CREATE INDEX IF NOT EXISTS idx_messages_type_status
     ON messages (message_type, status);

@@ -1,3 +1,5 @@
+"""Construccion del HTML del dashboard a partir de datos consultados."""
+
 from __future__ import annotations
 
 import json

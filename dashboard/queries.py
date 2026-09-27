@@ -1,3 +1,5 @@
+"""Consultas parametrizadas que alimentan las metricas del dashboard."""
+
 from __future__ import annotations
 
 import os
@@ -12,7 +14,7 @@ VALID_STATUSES = {"failed", "read", "sent", "delivered"}
 
 
 def get_connection():
-    """Abre una conexión corta a PostgreSQL usando variables de entorno."""
+    """Abre una conexion corta a PostgreSQL con la configuracion del entorno."""
     return psycopg.connect(
         host=os.getenv("POSTGRES_HOST", "postgres"),
         port=int(os.getenv("POSTGRES_PORT", "5432")),
@@ -56,7 +58,7 @@ def build_message_filters(
     status: str | None = None,
     alias: str = "m",
 ) -> tuple[str, list[Any]]:
-    """Construye fragmentos SQL permitidos y mantiene los valores parametrizados."""
+    """Construye filtros permitidos y devuelve sus parametros por separado."""
     clauses: list[str] = []
     params: list[Any] = []
 

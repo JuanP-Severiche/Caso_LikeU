@@ -1,3 +1,4 @@
+-- Vistas reutilizables para evitar repetir la logica analitica en el dashboard.
 CREATE OR REPLACE VIEW vw_delivery_funnel AS
 WITH outgoing AS (
     SELECT status

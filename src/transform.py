@@ -1,3 +1,5 @@
+"""Limpieza, normalizacion y enriquecimiento de los mensajes."""
+
 from __future__ import annotations
 
 import json
@@ -28,20 +30,20 @@ DATE_COLUMNS = ("created_at", "updated_at")
 
 
 MOJIBAKE_MARKERS = (
-    "Ã",
-    "Â",
-    "â€",
-    "â€™",
-    "â€œ",
-    "â€",
-    "ðŸ",
-    "ï¿½",
-    "�",
+    "\u00c3",
+    "\u00c2",
+    "\u00e2\u20ac",
+    "\u00e2\u20ac\u2122",
+    "\u00e2\u20ac\u0153",
+    "\u00e2\u20ac\u009d",
+    "\u00f0\u0178",
+    "\u00ef\u00bf\u00bd",
+    "\ufffd",
 )
 
 
 def _suspicious_text_score(text: str) -> int:
-    """Puntúa señales típicas de UTF-8 interpretado como Latin-1/Windows-1252."""
+    """Cuenta patrones frecuentes de texto mal decodificado."""
     return sum(text.count(marker) for marker in MOJIBAKE_MARKERS)
 
 
@@ -57,24 +59,24 @@ def repair_mojibake(value: object) -> tuple[str, bool]:
     if not text:
         return text, False
 
-    # Mapa generado a partir de caracteres relevantes para español.
+    # Reemplazos limitados a caracteres frecuentes en español.
     intended_chars = "áéíóúÁÉÍÓÚñÑüÜ¿¡"
     replacements = {
         char.encode("utf-8").decode("latin-1"): char
         for char in intended_chars
     }
 
-    # Secuencias frecuentes adicionales de Windows-1252/UTF-8.
+    # Casos comunes que no quedan cubiertos por el mapa anterior.
     replacements.update({
-        "Â ": " ",
-        "Â¿": "¿",
-        "Â¡": "¡",
-        "â€™": "’",
-        "â€œ": "“",
-        "â€": "”",
-        "â€“": "–",
-        "â€”": "—",
-        "â€¦": "…",
+        "\u00c2 ": " ",
+        "\u00c2\u00bf": "¿",
+        "\u00c2\u00a1": "¡",
+        "\u00e2\u20ac\u2122": "’",
+        "\u00e2\u20ac\u0153": "“",
+        "\u00e2\u20ac\u009d": "”",
+        "\u00e2\u20ac\u201c": "–",
+        "\u00e2\u20ac\u201d": "—",
+        "\u00e2\u20ac\u00a6": "…",
     })
 
     repaired = text
@@ -90,18 +92,18 @@ def normalize_message_text(value: object) -> tuple[str, bool, str]:
     Genera el mensaje limpio sin destruir el dato fuente.
 
     - normaliza Unicode a NFC;
-    - repara mojibake recuperable (ej. conversaciÃ³n -> conversación);
-    - convierte el marcador ¶ en espacios;
+    - repara secuencias de codificacion recuperables;
+    - convierte el marcador de salto del origen en espacios;
     - compacta espacios y saltos de línea;
     - conserva signos, tildes, ñ, emojis y contenido semántico;
     - marca pérdidas ya presentes en la fuente como Nu?Ez sin inventar caracteres.
     """
     repaired, was_repaired = repair_mojibake(value)
-    cleaned = repaired.replace("¶", " ")
+    cleaned = repaired.replace("\u00b6", " ")
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
     cleaned = unicodedata.normalize("NFC", cleaned)
 
-    # Señal conservadora de carácter ya perdido en origen: letra ? letra.
+    # Si la fuente ya reemplazo una letra por ?, se marca sin intentar adivinarla.
     unrecoverable = bool(
         re.search(r"(?<=[A-Za-zÁÉÍÓÚÜÑáéíóúüñ])\?(?=[A-Za-zÁÉÍÓÚÜÑáéíóúüñ])", cleaned)
     )
@@ -128,11 +130,12 @@ def _is_separator_row(value: object) -> bool:
 
 
 def normalize_identifier(value: object) -> int | None:
+    """Convierte identificadores con separador de miles a enteros."""
     text = _clean_cell(value)
     if not text:
         return None
 
-    # Source identifiers use dots as thousands separators (e.g. 31.888 -> 31888).
+    # Los identificadores de origen usan punto como separador de miles.
     compact = text.replace(".", "")
     return int(compact) if compact.isdigit() else None
 
@@ -157,7 +160,7 @@ def parse_embedded_json(value: object) -> dict[str, Any]:
             try:
                 current = json.loads(current)
             except (json.JSONDecodeError, TypeError):
-                # The file stores escaped quotes after an outer quote layer.
+                # Algunos campos tienen una segunda capa de comillas escapadas.
                 try:
                     current = json.loads(current.replace('\\"', '"'))
                 except (json.JSONDecodeError, TypeError):
@@ -203,6 +206,7 @@ def _json_parse_status(row: pd.Series) -> str:
 
 
 def clean_messages(frame: pd.DataFrame) -> pd.DataFrame:
+    """Aplica la limpieza completa y agrega las columnas analiticas del caso."""
     data = frame.copy()
     data.columns = [column.strip().lower() for column in data.columns]
 
@@ -232,7 +236,7 @@ def clean_messages(frame: pd.DataFrame) -> pd.DataFrame:
     data["template_name"] = data.apply(_extract_template_name, axis=1)
     data["json_parse_status"] = data.apply(_json_parse_status, axis=1)
 
-    # Se conserva content como dato fuente y se crea una versión limpia para consumo analítico.
+    # content se conserva intacto; clean_message se usa para el analisis.
     normalized_content = data.get("content", pd.Series(index=data.index, dtype=str)).map(normalize_message_text)
     normalized_frame = pd.DataFrame(
         normalized_content.tolist(),

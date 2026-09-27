@@ -1,3 +1,5 @@
+"""Trazabilidad del ETL mostrada desde el dashboard."""
+
 from __future__ import annotations
 
 import csv

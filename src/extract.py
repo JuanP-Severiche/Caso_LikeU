@@ -1,3 +1,5 @@
+"""Lectura del archivo transaccional sin alterar el JSON escapado."""
+
 from __future__ import annotations
 
 import csv
@@ -7,7 +9,7 @@ import pandas as pd
 
 
 def read_raw_messages(path: Path) -> pd.DataFrame:
-    """Read the source TXT without interpreting escaped JSON quotes as CSV quotes."""
+    """Lee el TXT usando el separador real y conserva el JSON escapado como texto."""
     if not path.exists():
         raise FileNotFoundError(f"No se encontró el archivo de entrada: {path}")
 
